@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/baitap1th/baitap1th.iml" filepath="$PROJECT_DIR$/baitap1th/baitap1th.iml" />
+      <module fileurl="file://$PROJECT_DIR$/baitapth.iml" filepath="$PROJECT_DIR$/baitapth.iml" />
+      <module fileurl="file://$PROJECT_DIR$/btap/btap.iml" filepath="$PROJECT_DIR$/btap/btap.iml" />
+    </modules>
+  </component>
+</project>
