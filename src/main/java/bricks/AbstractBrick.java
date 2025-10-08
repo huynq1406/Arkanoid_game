@@ -1,6 +1,10 @@
 package bricks;
 
-public abstract class AbstractBrick {
+import Entities.*;
+
+import java.awt.*;
+
+public abstract class AbstractBrick extends GameObject {
         protected int x;          // tọa độ X
         protected int y;          // tọa độ Y
         protected int width;      // chiều rộng gạch
@@ -8,10 +12,7 @@ public abstract class AbstractBrick {
         protected int hitPoints;  // số lần cần đánh để phá
 
         public AbstractBrick(int x, int y, int width, int height, int hitPoints) {
-            this.x = x;
-            this.y = y;
-            this.width = width;
-            this.height = height;
+            super(x,y, width, height);
             this.hitPoints = hitPoints;
         }
 
@@ -43,6 +44,16 @@ public abstract class AbstractBrick {
 
         // Abstract method (bắt buộc lớp con phải cài đặt) ----
         public abstract void onHit();
+        public void takeHit() {
+            if(hitPoints > 0) {
+                hitPoints--;
+            }
+        }
+
+        public void render(Graphics g) {
+            g.setColor(Color.PINK);
+            g.fillRect(x, y, width, height);
+        }
         /** Xử lý khi bị bóng đập vào; với abstract class bricks.AbstractBrick,
          mọi phương thức trong class có thể được dùng trong các class con
          bằng cách kế thừa (extends).*/
