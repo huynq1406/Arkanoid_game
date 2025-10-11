@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.List;
 import PowerUp.IPowerUp;
 import bricks.NormalBricks;
 
@@ -41,4 +42,3 @@ public class Level {
         return ball.getY() > 600; // rơi khỏi màn hình
     }
 }
-
