@@ -1,5 +1,6 @@
 package Entities;
 
+import java.awt.*;
 import java.awt.Graphics; //import thu vien de ve moi thu
 import java.awt.Rectangle; //import thu vien de ve hinh chu nhat
 
@@ -8,10 +9,8 @@ import java.awt.Rectangle; //import thu vien de ve hinh chu nhat
  * Lop ke thua: MovableObject, Brick
  */
 public abstract class GameObject {
-    protected int x;
-    protected int y;
-    protected int width;
-    protected int height;
+    protected int x, y;
+    protected int width, height;
 
     public GameObject(int x, int y, int width, int height) {
         this.x = x;
@@ -20,7 +19,14 @@ public abstract class GameObject {
         this.height = height;
     }
 
-    public abstract void update();
+    public Rectangle getBounds() {
+        return new Rectangle(x,y,width,height);
+    }
+
+    public int centerX() {return x + width / 2;}
+    public int centerY() {return y + width / 2;}
+
+    public abstract void update(double dt);
     public abstract void render(Graphics g);
 
     public int getX() {return x;}
@@ -34,27 +40,4 @@ public abstract class GameObject {
 
     public int getHeight() {return height;}
     public void setHeight(int height) {this.height = height;}
-
-    public int centerX() {
-        return x + width / 2;
-    }
-    public int centerY() {
-        return y + width / 2;
-    }
-    /**
-     * Kiem tra va cham
-     * @return tao ra 1 rect khac vi bong di chuyen
-     */
-    public Rectangle getBounds() {
-        return new Rectangle(x,y,width,height);
-    }
-
-    /**
-     * Kiem tra doi tuong co va cham voi doi tuong khac khong
-     * @param other: doi tuong khac
-     * @return true, false va cham
-     */
-    public boolean intersects(GameObject other) {
-        return this.getBounds().intersects(other.getBounds());
-    }
 }

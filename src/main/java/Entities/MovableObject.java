@@ -3,35 +3,36 @@ package Entities;
 import java.awt.Graphics;
 
 public abstract class MovableObject extends GameObject {
-    protected int dx;
-    protected int dy;
+    protected double dirX;
+    protected double dirY;
+    protected double speed;
 
-    public MovableObject(int x, int y, int width, int height, int dx, int dy) {
+    public MovableObject(int x, int y, int width, int height) {
         super(x,y,width,height);
-        this.dx = dx;
-        this.dy = dy;
     }
 
-    public void move() {
-        this.x += dx;
-        this.y += dy;
+    public void setDirection(double dx, double dy) {
+        this.dirX = dx;
+        this.dirY = dy;
+        normalizeDirection();
+    }
+
+    public double getSpeed() {return speed;}
+    public void setSpeed(double spped) {this.speed = speed;}
+
+    protected void normalizeDirection() {
+        double len = Math.sqrt(dirX * dirX + dirY * dirY);
+        if (len == 0) {
+            dirX = 0;
+            dirY = 0;
+            return;
+        }
+        dirX /= len; dirY /= len;
     }
 
     @Override
-    public abstract void update();
-    @Override
-    public abstract void render(Graphics g);
-
-    public int getDy() {return dy;}
-    public void setDy(int dy) {this.dy = dy;}
-
-    public int getDx() {return dx;}
-    public void setDx(int dx) {this.dx = dx;}
-
-    public void reverseX() {
-        this.dx = -dx;
-    }
-    public void reverseY() {
-        this.dy = -dy;
+    public void update(double dt) {
+        x += (int) Math.round(dirX * speed *dt);
+        y += (int) Math.round(dirY * speed * dt);
     }
 }

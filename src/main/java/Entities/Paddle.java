@@ -4,45 +4,41 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 public class Paddle extends MovableObject {
-    private int speed;
-    private String currentPowerUp;
-    private int screenWidth; //chieu rong man hinh de gioi han di chuyen cua paddle
+    private final int screenWidth;
+    private final int floorY; //du co dinh paddle duoi mep
 
-    public Paddle(int x,int y, int width, int height, int spped, int screenWidth) {
-        super(x,y,width,height,0,0);
+    public Paddle(int x,int y, int width, int height, int screenWidth, int floorY) {
+        super(x,floorY - height, width, height);
         this.screenWidth = screenWidth;
-        this.speed = speed;
-        this.currentPowerUp = "None";
+        this.floorY = floorY;
+        this.y = floorY - height;
     }
 
-    public void moveRight() {
-        x += speed;
-        if (x + width > screenWidth) x = screenWidth - width;
+    public void setXClamped(int newX) {
+        if (newX < 0) newX = 0;
+        int maxX = screenWidth - width;
+        if (newX > maxX) newX = maxX;
+        this.x = newX;
+        this.y = floorY - height;
     }
 
-    public void moveLeft() {
-        x -= speed;
-        if (x < 0) x = 0;
-    }
-
-    public void applyPowerUp(String powerUpType) {
-        this.currentPowerUp = powerUpType;
+    public void setCenterX(int centerX) {
+        setXClamped(centerX - width / 2);
     }
 
     @Override
-    public void update() {}
+    public void update(double dt) {
+        this.y = floorY - height;
+    }
     @Override
     public void render(Graphics g) {
-        g.setColor(Color.BLUE);
-        g.fillRect(x,y,width,height);
+        g.setColor(new Color(40,170,255));
+        g.fillRoundRect(x,y,width,height,12,12);
+
+        g.setColor(new Color(20, 80, 120));
+        g.drawRoundRect(x, y, width, height, 12, 12);
+
+        g.setColor(new Color(255, 255, 255, 40));
+        g.fillRect(x + width/2 - 2, y + 3, 4, height - 6);
     }
-
-    public int getSpeed() {return speed;}
-    public void setSpeed(int speed) {this.speed = speed;}
-
-    public String getCurrentPowerUp() {return currentPowerUp;}
-    public void setCurrentPowerUp(String currentPowerUp) {this.currentPowerUp = currentPowerUp;
-    }
-
-    public int getScreenWidth() {return screenWidth;}
 }

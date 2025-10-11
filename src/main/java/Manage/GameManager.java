@@ -6,15 +6,15 @@ import bricks.AbstractBrick;
 import bricks.NormalBricks;
 import bricks.StrongBricks;
 
-import java.awt.Graphics;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 public class GameManager {
 
-    public final int WIDTH;
-    public final int HEIGHT;
+    public final int width;
+    public final int height;
 
     private final Paddle paddle;
     private final Ball ball;
@@ -26,12 +26,12 @@ public class GameManager {
     boolean spacePressed = false;
 
     public GameManager(int width, int height) {
-        this.WIDTH = width;
-        this.HEIGHT = height;
+        this.width = width;
+        this.height = height;
 
         // tạo paddle & ball
-        paddle = new Paddle(WIDTH / 2 - 50, HEIGHT - 40, 100, 14, 8, WIDTH);
-        ball   = new Ball(0, 0, 14, 5, 0.7, -1, WIDTH, HEIGHT);
+        paddle = new Paddle(width / 2 - 50, height - 40, 100, 14, 8, width);
+        ball   = new Ball(0, 0, 14, 5, 0.7, -1, width, height);
         ball.attachToPaddle(paddle);
         ball.resetOnPaddle(paddle); // bóng nằm trên paddle lúc bắt đầu
 
@@ -44,7 +44,7 @@ public class GameManager {
         int rows = 5;
         int brickW = 64;
         int brickH = 24;
-        int startX = (WIDTH - cols * brickW) / 2;
+        int startX = (width - cols * brickW) / 2;
         int startY = 80;
 
         for (int r = 0; r < rows; r++) {
@@ -88,8 +88,8 @@ public class GameManager {
     /** vẽ toàn cảnh */
     public void render(Graphics g) {
         // nền đen
-        g.setColor(java.awt.Color.PINK);
-        g.fillRect(0, 0, WIDTH, HEIGHT);
+        g.setColor(Color.PINK);
+        g.fillRect(0, 0, width, height);
 
         // vẽ gạch
         for (AbstractBrick b : bricks) {
@@ -101,10 +101,10 @@ public class GameManager {
         ball.render(g);
 
         // HUD đơn giản
-        g.setColor(java.awt.Color.WHITE);
+        g.setColor(Color.WHITE);
         g.drawString("Bricks: " + bricks.size(), 10, 20);
         if (ball.getSpeed() == 0) {
-            g.drawString("Press SPACE to launch", WIDTH/2 - 70, HEIGHT - 10);
+            g.drawString("Press SPACE to launch", width/2 - 70, height - 10);
         }
     }
 }
