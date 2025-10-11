@@ -1,15 +1,17 @@
+package Levels;
+
 import java.util.ArrayList;
 import java.util.List;
-import PowerUp.IPowerUp;
-import bricks.NormalBricks;
+import Entities.PowerUp.IPowerUp;
+import Entities.bricks.NormalBricks;
 
-public class Level {
+public class AbstractLevel {
     private List<NormalBricks> brick;
     private List<IPowerUp> powerUps;
     private Ball ball;
     private Paddle paddle;
 
-    public Level(int levelNum) {
+    public AbstractLevel(int levelNum) {
         loadBricks(levelNum);
         paddle = new Paddle(350, 550, 100, 15);
         ball = new Ball(400, 530, 8, 5, -5);

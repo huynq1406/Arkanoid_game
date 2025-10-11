@@ -1,4 +1,4 @@
-package bricks;
+package Entities.bricks;
 
 public abstract class AbstractBrick {
         protected int x;          // tọa độ X
@@ -40,6 +40,8 @@ public abstract class AbstractBrick {
         public void setHitPoints(int hp) {
             this.hitPoints = hp;
         }
+
+
 
         // Abstract method (bắt buộc lớp con phải cài đặt) ----
         public abstract void onHit();

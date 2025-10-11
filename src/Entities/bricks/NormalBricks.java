@@ -1,4 +1,4 @@
-package bricks;
+package Entities.bricks;
 
     public class NormalBricks extends AbstractBrick {
 
