@@ -1,68 +1,73 @@
 package Manage;
 
 import javax.swing.JPanel;
+import javax.swing.Timer;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 
-public class GamePanel extends JPanel implements Runnable {
+/**
+ * Panel chính của game.
+ * - Điều khiển chuột: move -> paddle theo chuột.
+ * - Click: nếu đang chơi -> bắn; nếu đang dừng (win/lose) -> restart.
+ * - Timer 60 FPS.
+ */
+public class GamePanel extends JPanel {
+    public static final int WIDTH = 800;
+    public static final int HEIGHT = 600;
 
     private final GameManager game;
-    private Thread loopThread;
-    private boolean running = false;
+    private long lastTickNanos;
+    private final Timer timer;
 
-    public GamePanel(int width, int height) {
-        setPreferredSize(new Dimension(width, height));
+    public GamePanel() {
+        setPreferredSize(new Dimension(WIDTH, HEIGHT));
         setFocusable(true);
         requestFocusInWindow();
 
-        game = new GameManager(width, height);
-        initInput();
-    }
+        game = new GameManager(WIDTH, HEIGHT);
 
-    private void initInput() {
-        addKeyListener(new KeyAdapter() {
-            @Override public void keyPressed(KeyEvent e) {
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_LEFT  -> game.leftPressed  = true;
-                    case KeyEvent.VK_RIGHT -> game.rightPressed = true;
-                    case KeyEvent.VK_SPACE -> game.spacePressed = true;
-                }
+        // Move/drag chuột -> paddle bám theo
+        addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                game.movePaddleToMouseX(e.getX());
+                repaint();
             }
-            @Override public void keyReleased(KeyEvent e) {
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_LEFT  -> game.leftPressed  = false;
-                    case KeyEvent.VK_RIGHT -> game.rightPressed = false;
-                    case KeyEvent.VK_SPACE -> game.spacePressed = false;
-                }
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                game.movePaddleToMouseX(e.getX());
+                repaint();
             }
         });
+
+        // Click: playing -> launch, stopped -> restart
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (!game.isRunning()) game.restart();
+                else game.launchBall();
+                repaint();
+            }
+        });
+
+        lastTickNanos = System.nanoTime();
+        timer = new Timer(1000 / 60, e -> tick());
     }
 
-    public void start() {
-        if (running) return;
-        running = true;
-        loopThread = new Thread(this, "GameLoop");
-        loopThread.start();
-    }
+    /** Bắt đầu vòng lặp game (Timer). */
+    public void start() { timer.start(); }
 
-    @Override
-    public void run() {
-        final int fps = 60;
-        final long frameTime = 1000L / fps;
+    private void tick() {
+        long now = System.nanoTime();
+        double dt = (now - lastTickNanos) / 1_000_000_000.0;
+        if (dt > 0.05) dt = 0.05; // clamp khi bị lag
+        lastTickNanos = now;
 
-        while (running) {
-            long start = System.currentTimeMillis();
-
-            game.update();
-            repaint();
-
-            long elapsed = System.currentTimeMillis() - start;
-            long sleep = frameTime - elapsed;
-            if (sleep < 2) sleep = 2;  // tránh sleep âm
-            try { Thread.sleep(sleep); } catch (InterruptedException ignored) {}
-        }
+        game.update(dt);
+        repaint();
     }
 
     @Override

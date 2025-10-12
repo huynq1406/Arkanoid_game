@@ -1,116 +1,73 @@
 package Entities;
 
 import java.awt.*;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import java.util.List;
-
-import bricks.*;
-
 
 public class Ball extends MovableObject {
-   private final int screenWidth, screenHeight;
-   private int prevX, prevY;
+    private final int radius;
 
-    public Ball(int x, int y, int size, int screenHeight, int screenWidth, double speed) {
-        super(x, y, size, size);
+    private double speed;   // pixel/giây
+    private double dirX;    // hướng chuẩn hóa [-1..1]
+    private double dirY;
+    private boolean launched = false;
+
+    public Ball(int x, int y, int radius) {
+        super(x - radius, y - radius, radius * 2, radius * 2);
+        this.radius = radius;
+        this.speed = 220;
+        setDirection(0.5, -1); // HƯỚNG MẶC ĐỊNH THEO YÊU CẦU
+    }
+
+    public void setDirection(double newDirX, double newDirY) {
+        double len = Math.hypot(newDirX, newDirY);
+        if (len < 1e-6) return;
+        dirX = newDirX / len;
+        dirY = newDirY / len;
+        this.dx = speed * dirX;
+        this.dy = speed * dirY;
+    }
+
+    public double getDirX() { return dirX; }
+    public double getDirY() { return dirY; }
+
+    public double getSpeed() { return speed; }
+    public void setSpeed(double speed) {
         this.speed = speed;
-        this.screenHeight = screenHeight;
-        this.screenWidth = screenWidth;
-        setDirection(0.5,-1); //diem xuat phat bong cheo len phai
+        this.dx = speed * dirX;
+        this.dy = speed * dirY;
     }
 
-    private void bounceOnWalls() {
-        if (x <= 0) {
-            x = 0;
-            dirX = Math.abs(dirX);
-        }
-        if (x + width >= screenWidth) {
-            x = screenWidth - width;
-            dirX = -Math.abs(dirX);
-        }
-        if (y <= 0) {
-            y = 0;
-            dirY = Math.abs(dirY);
-        }
+    public void resetToPaddle(Paddle paddle) {
+        this.launched = false;
+        this.x = paddle.getX() + paddle.getWidth()/2 - radius;
+        this.y = paddle.getY() - 1 - radius*2;
+        this.speed = 220;
+        setDirection(0.5, -1); // HƯỚNG MẶC ĐỊNH KHI RESET
     }
 
-    public void checkCollision(Paddle paddle) {
-        Rectangle ballRect = getBounds();
-        Rectangle padRect = paddle.getBounds();
-        if (!ballRect.intersects(padRect)) return;
-
-        Rectangle over = ballRect.intersection(padRect);
-        int penX = over.width;
-        int penY = over.height;
-        if (penX < penY) {
-            if (x > prevX) {
-                x -= penX;
-            } else {
-                x += penX;
-            }
-            dirX = -dirX;
+    public void update(double dt, Paddle paddle) {
+        if (!launched) {
+            this.x = paddle.getX() + paddle.getWidth()/2 - radius;
+            this.y = paddle.getY() - 1 - radius*2;
+            return;
         }
-        else {
-            if (y > prevY) {
-                y -= penY;
-                double hitRatio = (this.centerX() - paddle.getX()) / (double) paddle.getWidth() * 2.0 - 1.0;
-                if (hitRatio > 1) hitRatio = 1;
-                if (hitRatio < -1) hitRatio = -1;
-                if (Math.abs(hitRatio) > 0.95) hitRatio = 0.95 * Math.signum(hitRatio);
-                this.dirX = hitRatio;
-                this.dirY = -Math.abs(dirY);
-                normalizeDirection();
-                // bảo đảm có thành phần dọc tối thiểu
-                if (Math.abs(dirY) < 0.2) {
-                    dirY = -0.2;
-                    normalizeDirection();
-                }
-            } else {
-                // Đi lên, đập mặt dưới (hiếm)
-                y += penY;
-                dirY = -dirY;
-            }
-        }
-    }
-
-    public boolean checkCollision(AbstractBrick bricks) {
-        if (bricks.isDestroyed()) return false;
-        Rectangle r1 = getBounds();
-        Rectangle r2 = bricks.getBounds();
-        if (!r1.intersects(r2)) return false;
-
-        Rectangle over = r1.intersection(r2);
-        int penX = over.width;
-        int penY = over.height;
-
-        if (penX < penY) {
-            if (x > prevX) x -= penX; else x += penX;
-            dirX = -dirX;
-        } else {
-            if (y > prevY) y -= penY; else y += penY;
-            dirY = -dirY;
-        }
-        bricks.takeHit();
-        return true;
-    }
-
-    public boolean fellOutBottom() {
-        return y > screenHeight;
+        update(dt);
     }
 
     @Override
     public void update(double dt) {
-        prevX = x;
-        prevY = y;
-        super.update(dt);
-        bounceOnWalls();
+        updatePosition(dt);
     }
+
+    public void launch() { this.launched = true; }
+    public boolean isLaunched() { return launched; }
+
+    public void bounceX() { setDirection(-dirX, dirY); }
+
+    public void bounceY() { setDirection(dirX, -dirY); }
+
     @Override
     public void render(Graphics g) {
         g.setColor(Color.WHITE);
-        g.fillOval(x,y,width,height);
+        g.fillOval(x, y, width, height);
     }
-
 }

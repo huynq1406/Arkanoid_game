@@ -4,32 +4,23 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 public class Paddle extends MovableObject {
-    private final int screenWidth;
-    private final int floorY; //du co dinh paddle duoi mep
-
-    public Paddle(int x,int y, int width, int height, int screenWidth, int floorY) {
-        super(x,floorY - height, width, height);
-        this.screenWidth = screenWidth;
-        this.floorY = floorY;
-        this.y = floorY - height;
+    public Paddle(int x, int y, int width, int height) {
+        super(x,y,width,height);
+        this.dx = 0;
+        this.dy = 0;
+    }
+    public void setCenterX(int mouseX) {
+         this.x = mouseX - width / 2;
     }
 
-    public void setXClamped(int newX) {
-        if (newX < 0) newX = 0;
-        int maxX = screenWidth - width;
-        if (newX > maxX) newX = maxX;
-        this.x = newX;
-        this.y = floorY - height;
-    }
-
-    public void setCenterX(int centerX) {
-        setXClamped(centerX - width / 2);
+    public void clamp(int minX, int maxX) {
+        if (x < minX) x = minX;
+        if (x + width > maxX) x = maxX - width;
     }
 
     @Override
-    public void update(double dt) {
-        this.y = floorY - height;
-    }
+    public void update(double dt){}
+
     @Override
     public void render(Graphics g) {
         g.setColor(new Color(40,170,255));

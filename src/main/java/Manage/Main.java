@@ -3,17 +3,18 @@ package Manage;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
+/** Điểm vào chương trình. Chạy để chơi ngay. */
 public class Main {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            int W = 800, H = 600;
-            JFrame f = new JFrame("Arkanoid (basic)");
-            GamePanel panel = new GamePanel(W, H);
-            f.setContentPane(panel);
-            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            f.pack();
-            f.setLocationRelativeTo(null);
-            f.setVisible(true);
+            JFrame frame = new JFrame("Arkanoid - Mouse Control (v3)");
+            GamePanel panel = new GamePanel();
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setResizable(false);
+            frame.setContentPane(panel);
+            frame.pack();
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
             panel.start();
         });
     }
