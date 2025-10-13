@@ -1,9 +1,9 @@
 package GameTest;
 
 import java.util.*;
-import bricks.AbstractBrick;
-import bricks.NormalBricks;
-import bricks.StrongBricks;
+import Entities.bricks.AbstractBrick;
+import Entities.bricks.NormalBricks;
+import Entities.bricks.StrongBricks;
 
 public class Test {
         public static void main(String[] args) {
@@ -17,7 +17,7 @@ public class Test {
             for (int i = 0; i < 3; i++) {
                 System.out.println("----- Lượt đánh " + (i+1) + " -----");
                 for (AbstractBrick brick : bricks) {
-                    brick.onHit(); // Gọi Đa hình
+                    brick.takeHit(); // Gọi Đa hình
                 }
             }
         }

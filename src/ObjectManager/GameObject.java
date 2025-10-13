@@ -1,6 +1,5 @@
-package GameManager;
+package ObjectManager;
 
-import java.awt.*;
 import java.awt.Graphics; //import thu vien de ve moi thu
 import java.awt.Rectangle; //import thu vien de ve hinh chu nhat
 

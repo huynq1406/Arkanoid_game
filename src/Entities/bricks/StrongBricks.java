@@ -1,21 +1,56 @@
 package Entities.bricks;
 
-    public class StrongBricks extends AbstractBrick {
+import java.awt.*;
 
-        public StrongBricks(int x, int y, int width, int height) {
-            super(x, y, width, height, 3); // cần 3 hit để phá
-        }
+public class StrongBricks extends AbstractBrick {
 
-        @Override
-        public void onHit() {
-            if (!isDestroyed()) {
-                hitPoints--; // Giảm máu
-                if (isDestroyed()) {
-                    System.out.println("Strong Brick đã vỡ!");
-                } else {
-                    System.out.println("Strong Brick bị đánh! Còn lại: " + hitPoints);
-                }
+    public StrongBricks(int x, int y, int width, int height) {
+        super(x, y, width, height); // cần 3 hit để phá
+        this.hitPoints = 3;
+    }
+
+    @Override
+    public void takeHit() {
+        if (!isDestroyed()) {
+            hitPoints--; // Giảm máu
+            if (isDestroyed()) {
+                System.out.println("Strong Brick đã vỡ!");
+            } else {
+                System.out.println("Strong Brick bị đánh! Còn lại: " + hitPoints);
             }
         }
     }
+
+    public void update(double dt) {
+        // xử lý cập nhật trạng thái gạch, ví dụ:
+        if (hitPoints <= 0) {
+            // gạch đã bị phá
+            return;
+        }
+    }
+
+    @Override
+    protected Color getBrickColor() {
+        switch (hitPoints) {
+            case 3:
+                return new Color(139, 0, 0); // đỏ đậm
+            case 2:
+                return new Color(205, 92, 92); // đỏ nhạt
+            case 1:
+                return new Color(255, 160, 122); // hồng nhạt
+            default:
+                return Color.GRAY; // đã vỡ
+        }
+    }
+
+    @Override
+    public void render(Graphics g) {
+        if (destroyed) return;
+        g.setColor(getBrickColor());
+        g.fillRect(x,y,width,height);
+
+        g.setColor(Color.BLACK);
+        g.drawRect(x,y,width,height);
+    }
+}
 
