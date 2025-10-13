@@ -9,18 +9,11 @@ public class NormalBricks extends AbstractBrick {
     }
 
     @Override
-    public void takeHit() {
-        hitPoints--; // Giảm máu
-        System.out.println("Normal Brick bị đánh! Trạng thái: "
-                + (isDestroyed() ? "Đã vỡ" : "Còn nguyên"));
-    }
-
-    @Override
     public void update(double dt) {
         // xử lý cập nhật trạng thái gạch, ví dụ:
         if (hitPoints <= 0) {
             // gạch đã bị phá
-
+            return;
         }
     }
 

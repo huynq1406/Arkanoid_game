@@ -6,12 +6,11 @@ import java.awt.*;
 
 public abstract class AbstractBrick extends GameObject {
     protected int hitPoints;
-    protected boolean destroyed;
+    protected boolean destroyed = false;
 
     public AbstractBrick(int x, int y, int width, int height) {
         super(x,y,width, height);
         this.hitPoints = 1;
-        this.destroyed = false;
     }
 
     public boolean isDestroyed() {
@@ -19,16 +18,16 @@ public abstract class AbstractBrick extends GameObject {
     }
 
     public boolean takeHit() {
-        hitPoints--;
         if (destroyed) {
             return false;
         }
+
+        hitPoints--;
 
         if (hitPoints <= 0) {
             destroyed = true;
             return true;
         }
-
         return false;
     }
 

@@ -8,6 +8,7 @@ import Entities.bricks.StrongBricks;
 public class Test {
         public static void main(String[] args) {
             List<AbstractBrick> bricks = new ArrayList<>();
+            NormalBricks nb = new NormalBricks(10, 10, 50, 20);
 
             // Tạo một gạch thường và một gạch bền
             bricks.add(new NormalBricks(10, 10, 50, 20));

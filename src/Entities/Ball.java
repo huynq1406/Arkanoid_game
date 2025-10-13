@@ -23,8 +23,8 @@ public class Ball extends MovableObject {
         if (len < 1e-6) return;
         dirX = newDirX / len;
         dirY = newDirY / len;
-        this.dx = speed * dirX;
-        this.dy = speed * dirY;
+        this.dx = 2f * speed * dirX;
+        this.dy = 2f * speed * dirY;
     }
 
     public double getDirX() { return dirX; }
@@ -33,8 +33,8 @@ public class Ball extends MovableObject {
     public double getSpeed() { return speed; }
     public void setSpeed(double speed) {
         this.speed = speed;
-        this.dx = speed * dirX;
-        this.dy = speed * dirY;
+        this.dx = 2f * speed * dirX;
+        this.dy = 2f * speed * dirY;
     }
 
     public void resetToPaddle(Paddle paddle) {

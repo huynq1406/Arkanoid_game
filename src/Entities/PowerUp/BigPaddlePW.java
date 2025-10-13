@@ -1,19 +1,25 @@
 package Entities.PowerUp;
 
+import Entities.Paddle;
+
 public class BigPaddlePW extends PowerUp implements IPowerUp {
+    protected Paddle pd;
 
     public BigPaddlePW(float x, float y) {
         super(x, y, 1);
         this.duration = 20; // số frame tồn tại
         this.timer = 0;
-        this.active = false;
+        this.active = true;
     }
 
     @Override
     public void activate() {
         // logic: phóng to paddle
-        active = true;
-        timer = 0;
+        if (active) {
+            while (timer < duration) {
+              pd.setWidth(pd.getWidth() * 2);
+            }
+        }
     }
 
     @Override

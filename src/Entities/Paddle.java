@@ -13,6 +13,15 @@ public class Paddle extends MovableObject {
         this.dx = 0;
         this.dy = 0;
     }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
     public void setCenterX(int mouseX) {
         this.x = mouseX - width / 2;
     }
@@ -24,7 +33,7 @@ public class Paddle extends MovableObject {
 
     @Override
     public void update(double dt){
-        if (bp.activate())
+
     }
 
     @Override

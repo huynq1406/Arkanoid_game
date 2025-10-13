@@ -165,10 +165,13 @@ public class GameManager {
     }
 
     public void render(Graphics g) {
-        g.setColor(new Color(20, 20, 30)); g.fillRect(0, 0, width, height);
-        g.setColor(new Color(80, 80, 100)); g.drawRect(0, 0, width-1, height-1);
+        g.setColor(new Color(20, 20, 30));
+        g.fillRect(0, 0, width, height);
+        g.setColor(new Color(80, 80, 100));
+        g.drawRect(0, 0, width-1, height-1);
 
-        for (AbstractBrick br : bricks) br.render(g);
+        for (AbstractBrick br : bricks)
+            br.render(g);
         paddle.render(g);
         ball.render(g);
 

@@ -9,18 +9,6 @@ public class StrongBricks extends AbstractBrick {
         this.hitPoints = 3;
     }
 
-    @Override
-    public void takeHit() {
-        if (!isDestroyed()) {
-            hitPoints--; // Giảm máu
-            if (isDestroyed()) {
-                System.out.println("Strong Brick đã vỡ!");
-            } else {
-                System.out.println("Strong Brick bị đánh! Còn lại: " + hitPoints);
-            }
-        }
-    }
-
     public void update(double dt) {
         // xử lý cập nhật trạng thái gạch, ví dụ:
         if (hitPoints <= 0) {
