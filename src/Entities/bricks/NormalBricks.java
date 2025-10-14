@@ -27,7 +27,7 @@ public class NormalBricks extends AbstractBrick {
         g.setColor(getBrickColor());
         g.fillRect(x,y,width,height);
 
-        g.setColor(Color.BLACK);
+        g.setColor(Color.black);
         g.drawRect(x,y,width,height);
     }
 }

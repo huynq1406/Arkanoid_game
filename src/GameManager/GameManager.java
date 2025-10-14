@@ -36,10 +36,10 @@ public class GameManager {
         char[][] map = new char[][]{
                 {'N','N','S','N','N','S','N','N','S','N'},
                 {'N','S','S','N','N','N','S','S','N','N'},
-                {'N','N','N','N','S','N','N','N','N','S'},
-                {'S','N','N','S','N','N','S','N','N','N'},
+                {'N','N','N','N','S','I','N','N','N','S'},
+                {'S','I','N','S','N','N','S','N','N','N'},
                 {'N','N','S','N','N','S','N','N','S','N'},
-                {'N','N','N','N','N','N','N','N','N','N'}
+                {'N','E','I','E','I','E','I','E','N','N'}
         };
         int cols = map[0].length, rows = map.length;
         int marginTop = 60, marginSide = 20, gap = 4;
@@ -52,6 +52,8 @@ public class GameManager {
                 int y = marginTop + r * (cellH + gap);
                 if (map[r][c] == 'N') bricks.add(new NormalBricks(x, y, cellW, cellH));
                 else if (map[r][c] == 'S') bricks.add(new StrongBricks(x, y, cellW, cellH));
+                else if (map[r][c] == 'I') bricks.add(new IndestructibleBrick(x, y, cellW, cellH));
+                else if (map[r][c] == 'E') bricks.add(new ExplosiveBrick(x, y, cellW, cellH));
             }
         }
     }
@@ -76,7 +78,11 @@ public class GameManager {
         if (win) running = false;
     }
 
-    public void launchBall() { if (!ball.isLaunched()) ball.launch(); }
+    public void launchBall() {
+//        if (!ball.isLaunched())
+        ball.launch();
+    }
+
     public void movePaddleToMouseX(int mouseX) { paddle.setCenterX(mouseX); paddle.clamp(0, width); }
     public void restart() {
         bricks.clear(); lives = 3; score = 0; win = false; running = true;
@@ -156,10 +162,13 @@ public class GameManager {
 
             boolean destroyedNow = brick.takeHit();
             if (destroyedNow) {
-                score += (brick instanceof StrongBricks) ? 150 : 100;
+                score += (brick instanceof StrongBricks) ? 150 : 50;
+                score += (brick instanceof NormalBricks) ? 100 : 0;
                 // tăng tốc nhẹ, có trần
                 double newSpeed = Math.min(420, ball.getSpeed() * 1.02);
                 ball.setSpeed(newSpeed);
+            } else if (brick instanceof ExplosiveBrick) {
+                ((ExplosiveBrick)brick).takeHit(bricks);
             }
         }
     }

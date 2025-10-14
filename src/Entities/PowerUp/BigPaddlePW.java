@@ -23,6 +23,13 @@ public class BigPaddlePW extends PowerUp implements IPowerUp {
     }
 
     @Override
+    public void deactivate() {
+        if (timer < duration) {
+            active = false;
+        }
+    }
+
+    @Override
     public void update() {
         if (active) {
             timer++;

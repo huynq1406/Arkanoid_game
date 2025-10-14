@@ -3,8 +3,8 @@ package Entities.PowerUp;
 public abstract class PowerUp implements IPowerUp {
     protected float x, y, size, speed;
     protected int type; // 1 = big paddle, 2 = small paddle, 3 = multi-ball, 4 = slow, 5 = extra life
-    protected int duration;
-    protected int timer;
+    protected int duration = 30;
+    protected int timer = 20;
     protected boolean active;
 
 
@@ -46,6 +46,19 @@ public abstract class PowerUp implements IPowerUp {
 
     public void setSpeed(float speed) {
         this.speed = speed;
+    }
+
+    public abstract void deactivate();
+
+    public void update() {
+        if (active) {
+            timer++;
+            if (timer > duration) {
+                deactivate();
+            }
+        } else {
+            fall();
+        }
     }
 
     public void fall() {

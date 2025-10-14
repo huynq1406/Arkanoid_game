@@ -30,7 +30,10 @@ public class Ball extends MovableObject {
     public double getDirX() { return dirX; }
     public double getDirY() { return dirY; }
 
-    public double getSpeed() { return speed; }
+    public double getSpeed() {
+        return speed;
+    }
+
     public void setSpeed(double speed) {
         this.speed = speed;
         this.dx = 2f * speed * dirX;
