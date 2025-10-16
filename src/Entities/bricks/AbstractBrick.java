@@ -1,6 +1,7 @@
 package Entities.bricks;
 
 import ObjectManager.GameObject;
+import java.util.List;
 
 import java.awt.*;
 
@@ -17,13 +18,9 @@ public abstract class AbstractBrick extends GameObject {
         return destroyed;
     }
 
-    public boolean takeHit() {
-        if (destroyed) {
-            return false;
-        }
-
+    public boolean takeHit(List<AbstractBrick> bricks) {
+        if (destroyed) return false;
         hitPoints--;
-
         if (hitPoints <= 0) {
             destroyed = true;
             return true;

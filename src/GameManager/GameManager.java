@@ -2,6 +2,8 @@ package GameManager;
 
 import Entities.Ball;
 import Entities.Paddle;
+import Entities.PowerUp.BigPaddlePW;
+import Entities.PowerUp.PowerUp;
 import Entities.bricks.*;
 
 import java.awt.*;
@@ -15,6 +17,7 @@ public class GameManager {
     private final Paddle paddle;
     private final Ball ball;
     private final List<AbstractBrick> bricks = new ArrayList<>();
+    private List<PowerUp> powerUps = new ArrayList<>();
 
     private boolean running = true;
     private boolean win = false;
@@ -74,7 +77,7 @@ public class GameManager {
         }
 
         // Thắng nếu mọi gạch vỡ
-        win = bricks.stream().allMatch(AbstractBrick::isDestroyed);
+        win = bricks.stream().filter(b -> !(b instanceof IndestructibleBrick)).allMatch(AbstractBrick::isDestroyed);
         if (win) running = false;
     }
 
@@ -83,14 +86,24 @@ public class GameManager {
         ball.launch();
     }
 
-    public void movePaddleToMouseX(int mouseX) { paddle.setCenterX(mouseX); paddle.clamp(0, width); }
+    public void movePaddleToMouseX(int mouseX) {
+        paddle.setCenterX(mouseX);
+        paddle.clamp(0, width);
+    }
+
     public void restart() {
-        bricks.clear(); lives = 3; score = 0; win = false; running = true;
+        bricks.clear();
+        lives = 3;
+        score = 0;
+        win = false;
+        running = true;
         paddle.setX(width/2 - paddle.getWidth()/2); paddle.setY(height - 40);
         ball.resetToPaddle(paddle);
         buildLevel();
     }
-    public boolean isRunning() { return running; }
+    public boolean isRunning() {
+        return running;
+    }
 
     private enum Side { NONE, LEFT, RIGHT, TOP, BOTTOM }
 
@@ -149,7 +162,13 @@ public class GameManager {
     private void checkCollisionWithBricks() {
         Rectangle bRect = ball.getBounds();
         for (AbstractBrick brick : bricks) {
-            if (brick.isDestroyed()) continue;
+            if (brick.isDestroyed()) {
+                if (Math.random() < 0.99) {
+                    PowerUp p = new BigPaddlePW(brick.getX(), brick.getY());
+                    powerUps.add(p);
+                }
+                continue;
+            }
             Side side = checkCollision(bRect, brick.getBounds());
             if (side == Side.NONE) continue;
 
@@ -160,7 +179,7 @@ public class GameManager {
                 case BOTTOM:reflectBall( 0, 1); break;
             }
 
-            boolean destroyedNow = brick.takeHit();
+            boolean destroyedNow = brick.takeHit(bricks);
             if (destroyedNow) {
                 score += (brick instanceof StrongBricks) ? 150 : 50;
                 score += (brick instanceof NormalBricks) ? 100 : 0;

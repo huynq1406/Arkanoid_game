@@ -18,7 +18,7 @@ public class Test {
             for (int i = 0; i < 3; i++) {
                 System.out.println("----- Lượt đánh " + (i+1) + " -----");
                 for (AbstractBrick brick : bricks) {
-                    brick.takeHit(); // Gọi Đa hình
+                    brick.takeHit(bricks); // Gọi Đa hình
                 }
             }
         }

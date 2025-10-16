@@ -23,8 +23,8 @@ public class Ball extends MovableObject {
         if (len < 1e-6) return;
         dirX = newDirX / len;
         dirY = newDirY / len;
-        this.dx = 2f * speed * dirX;
-        this.dy = 2f * speed * dirY;
+        this.dx = 1.5f * speed * dirX;
+        this.dy = 1.5f * speed * dirY;
     }
 
     public double getDirX() { return dirX; }

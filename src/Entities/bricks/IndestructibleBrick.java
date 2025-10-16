@@ -1,6 +1,8 @@
 package Entities.bricks;
 
 import java.awt.*;
+import java.util.List;
+
 import Entities.Ball;
 
 public class IndestructibleBrick extends AbstractBrick {
@@ -13,10 +15,12 @@ public class IndestructibleBrick extends AbstractBrick {
         destroyed = false;
     }
 
-    public boolean takeHit() {
-        destroyed = false;
+    @Override
+    public boolean takeHit(List<AbstractBrick> allBricks) {
+        // Gạch không bao giờ bị phá
         return false;
     }
+
 
     public Color getBrickColor() {
         return Color.DARK_GRAY;
