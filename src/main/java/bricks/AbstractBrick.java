@@ -39,3 +39,4 @@ public abstract class AbstractBrick extends GameObject {
         g.drawRect(x, y, width, height);
     }
 }
+//update
