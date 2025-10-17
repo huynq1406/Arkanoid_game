@@ -30,7 +30,7 @@ public class ExplosiveBrick extends AbstractBrick {
     // Dành cho xử lý lan nổ
     public List<AbstractBrick> explode(List<AbstractBrick> allBricks) {
         List<AbstractBrick> explodedBricks = new ArrayList<>();
-        int explosionRange = width + 10000; // bán kính nổ
+        int explosionRange = width + 100; // bán kính nổ
 
         for (AbstractBrick b : allBricks) {
             if (b == this || b.isDestroyed()) continue;
