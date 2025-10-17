@@ -1,10 +1,10 @@
-package Manage;
+package GameManager;
 
 import Entities.Ball;
 import Entities.Paddle;
-import bricks.AbstractBrick;
-import bricks.NormalBricks;
-import bricks.StrongBricks;
+import Entities.PowerUp.BigPaddlePW;
+import Entities.PowerUp.PowerUp;
+import Entities.bricks.*;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -17,6 +17,7 @@ public class GameManager {
     private final Paddle paddle;
     private final Ball ball;
     private final List<AbstractBrick> bricks = new ArrayList<>();
+    private List<PowerUp> powerUps = new ArrayList<>();
 
     private boolean running = true;
     private boolean win = false;
@@ -38,10 +39,10 @@ public class GameManager {
         char[][] map = new char[][]{
                 {'N','N','S','N','N','S','N','N','S','N'},
                 {'N','S','S','N','N','N','S','S','N','N'},
-                {'N','N','N','N','S','N','N','N','N','S'},
-                {'S','N','N','S','N','N','S','N','N','N'},
+                {'N','N','N','N','S','I','N','N','N','S'},
+                {'S','I','N','S','N','N','S','N','N','N'},
                 {'N','N','S','N','N','S','N','N','S','N'},
-                {'N','N','N','N','N','N','N','N','N','N'}
+                {'N','E','I','E','I','E','I','E','N','N'}
         };
         int cols = map[0].length, rows = map.length;
         int marginTop = 60, marginSide = 20, gap = 4;
@@ -54,6 +55,8 @@ public class GameManager {
                 int y = marginTop + r * (cellH + gap);
                 if (map[r][c] == 'N') bricks.add(new NormalBricks(x, y, cellW, cellH));
                 else if (map[r][c] == 'S') bricks.add(new StrongBricks(x, y, cellW, cellH));
+                else if (map[r][c] == 'I') bricks.add(new IndestructibleBrick(x, y, cellW, cellH));
+                else if (map[r][c] == 'E') bricks.add(new ExplosiveBrick(x, y, cellW, cellH));
             }
         }
     }
@@ -74,19 +77,33 @@ public class GameManager {
         }
 
         // Thắng nếu mọi gạch vỡ
-        win = bricks.stream().allMatch(AbstractBrick::isDestroyed);
+        win = bricks.stream().filter(b -> !(b instanceof IndestructibleBrick)).allMatch(AbstractBrick::isDestroyed);
         if (win) running = false;
     }
 
-    public void launchBall() { if (!ball.isLaunched()) ball.launch(); }
-    public void movePaddleToMouseX(int mouseX) { paddle.setCenterX(mouseX); paddle.clamp(0, width); }
+    public void launchBall() {
+//        if (!ball.isLaunched())
+        ball.launch();
+    }
+
+    public void movePaddleToMouseX(int mouseX) {
+        paddle.setCenterX(mouseX);
+        paddle.clamp(0, width);
+    }
+
     public void restart() {
-        bricks.clear(); lives = 3; score = 0; win = false; running = true;
+        bricks.clear();
+        lives = 3;
+        score = 0;
+        win = false;
+        running = true;
         paddle.setX(width/2 - paddle.getWidth()/2); paddle.setY(height - 40);
         ball.resetToPaddle(paddle);
         buildLevel();
     }
-    public boolean isRunning() { return running; }
+    public boolean isRunning() {
+        return running;
+    }
 
     private enum Side { NONE, LEFT, RIGHT, TOP, BOTTOM }
 
@@ -145,7 +162,13 @@ public class GameManager {
     private void checkCollisionWithBricks() {
         Rectangle bRect = ball.getBounds();
         for (AbstractBrick brick : bricks) {
-            if (brick.isDestroyed()) continue;
+            if (brick.isDestroyed()) {
+                if (Math.random() < 0.99) {
+                    PowerUp p = new BigPaddlePW(brick.getX(), brick.getY());
+                    powerUps.add(p);
+                }
+                continue;
+            }
             Side side = checkCollision(bRect, brick.getBounds());
             if (side == Side.NONE) continue;
 
@@ -156,21 +179,27 @@ public class GameManager {
                 case BOTTOM:reflectBall( 0, 1); break;
             }
 
-            boolean destroyedNow = brick.hit();
+            boolean destroyedNow = brick.takeHit(bricks);
             if (destroyedNow) {
-                score += (brick instanceof StrongBricks) ? 150 : 100;
+                score += (brick instanceof StrongBricks) ? 150 : 50;
+                score += (brick instanceof NormalBricks) ? 100 : 0;
                 // tăng tốc nhẹ, có trần
                 double newSpeed = Math.min(420, ball.getSpeed() * 1.02);
                 ball.setSpeed(newSpeed);
+            } else if (brick instanceof ExplosiveBrick) {
+                ((ExplosiveBrick)brick).takeHit(bricks);
             }
         }
     }
 
     public void render(Graphics g) {
-        g.setColor(new Color(20, 20, 30)); g.fillRect(0, 0, width, height);
-        g.setColor(new Color(80, 80, 100)); g.drawRect(0, 0, width-1, height-1);
+        g.setColor(new Color(20, 20, 30));
+        g.fillRect(0, 0, width, height);
+        g.setColor(new Color(80, 80, 100));
+        g.drawRect(0, 0, width-1, height-1);
 
-        for (AbstractBrick br : bricks) br.render(g);
+        for (AbstractBrick br : bricks)
+            br.render(g);
         paddle.render(g);
         ball.render(g);
 

@@ -1,6 +1,7 @@
 package Entities;
 
 import java.awt.*;
+import ObjectManager.*;
 
 public class Ball extends MovableObject {
     private final int radius;
@@ -22,18 +23,21 @@ public class Ball extends MovableObject {
         if (len < 1e-6) return;
         dirX = newDirX / len;
         dirY = newDirY / len;
-        this.dx = speed * dirX;
-        this.dy = speed * dirY;
+        this.dx = 1.5f * speed * dirX;
+        this.dy = 1.5f * speed * dirY;
     }
 
     public double getDirX() { return dirX; }
     public double getDirY() { return dirY; }
 
-    public double getSpeed() { return speed; }
+    public double getSpeed() {
+        return speed;
+    }
+
     public void setSpeed(double speed) {
         this.speed = speed;
-        this.dx = speed * dirX;
-        this.dy = speed * dirY;
+        this.dx = 2f * speed * dirX;
+        this.dy = 2f * speed * dirY;
     }
 
     public void resetToPaddle(Paddle paddle) {
@@ -58,10 +62,17 @@ public class Ball extends MovableObject {
         updatePosition(dt);
     }
 
-    public void launch() { this.launched = true; }
-    public boolean isLaunched() { return launched; }
+    public void launch() {
+        this.launched = true;
+    }
 
-    public void bounceX() { setDirection(-dirX, dirY); }
+    public boolean isLaunched() {
+        return launched;
+    }
+
+    public void bounceX() {
+        setDirection(-dirX, dirY);
+    }
 
     public void bounceY() { setDirection(dirX, -dirY); }
 

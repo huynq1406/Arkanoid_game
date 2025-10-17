@@ -1,7 +1,8 @@
-package Manage;
+package GameManager;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import GameManager.GamePanel;
 
 /** Điểm vào chương trình. Chạy để chơi ngay. */
 public class Main {

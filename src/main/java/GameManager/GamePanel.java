@@ -1,4 +1,4 @@
-package Manage;
+package GameManager;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -58,7 +58,9 @@ public class GamePanel extends JPanel {
     }
 
     /** Bắt đầu vòng lặp game (Timer). */
-    public void start() { timer.start(); }
+    public void start() {
+        timer.start();
+    }
 
     private void tick() {
         long now = System.nanoTime();

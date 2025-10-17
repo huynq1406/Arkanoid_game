@@ -1,6 +1,4 @@
-package Entities;
-
-import java.awt.Graphics;
+package ObjectManager;
 
 public abstract class MovableObject extends GameObject {
     protected double dx;

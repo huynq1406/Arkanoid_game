@@ -2,15 +2,28 @@ package Entities;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import ObjectManager.MovableObject;
+import Entities.PowerUp.*;
 
 public class Paddle extends MovableObject {
+    protected BigPaddlePW bp = new BigPaddlePW(21,23);
+
     public Paddle(int x, int y, int width, int height) {
         super(x,y,width,height);
         this.dx = 0;
         this.dy = 0;
     }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
     public void setCenterX(int mouseX) {
-         this.x = mouseX - width / 2;
+        this.x = mouseX - width / 2;
     }
 
     public void clamp(int minX, int maxX) {
@@ -19,7 +32,9 @@ public class Paddle extends MovableObject {
     }
 
     @Override
-    public void update(double dt){}
+    public void update(double dt){
+
+    }
 
     @Override
     public void render(Graphics g) {
