@@ -3,8 +3,8 @@ package Entities.PowerUp;
 public abstract class PowerUp implements IPowerUp {
     protected float x, y, size, speed;
     protected int type; // 1 = big paddle, 2 = small paddle, 3 = multi-ball, 4 = slow, 5 = extra life
-    protected int duration = 30;
-    protected int timer = 20;
+    protected int duration = 30; //thời gian hiệu lực
+    protected int timer = 20; //bộ đếm
     protected boolean active;
 
 
@@ -57,7 +57,7 @@ public abstract class PowerUp implements IPowerUp {
                 deactivate();
             }
         } else {
-            fall();
+            fall(); //rơi vật phẩm
         }
     }
 

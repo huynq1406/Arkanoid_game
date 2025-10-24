@@ -1,6 +1,6 @@
 package Entities.PowerUp;
 
-import Entities.Paddle;
+import Entities.*;
 
 public class BigPaddlePW extends PowerUp implements IPowerUp {
     protected Paddle pd;

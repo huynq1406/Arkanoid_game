@@ -1,10 +1,12 @@
 package GameManager;
 
-import Entities.Ball;
-import Entities.Paddle;
+import Entities.*;
 import Entities.PowerUp.BigPaddlePW;
 import Entities.PowerUp.PowerUp;
 import Entities.bricks.*;
+import Levels.LevelLoader;
+import Entities.bricks.AbstractBrick;
+import Entities.BrickFactory;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -36,27 +38,38 @@ public class GameManager {
     }
 
     private void buildLevel() {
-        char[][] map = new char[][]{
-                {'N','N','S','N','N','S','N','N','S','N'},
-                {'N','S','S','N','N','N','S','S','N','N'},
-                {'N','N','N','N','S','I','N','N','N','S'},
-                {'S','I','N','S','N','N','S','N','N','N'},
-                {'N','N','S','N','N','S','N','N','S','N'},
-                {'N','E','I','E','I','E','I','E','N','N'}
-        };
-        int cols = map[0].length, rows = map.length;
-        int marginTop = 60, marginSide = 20, gap = 4;
-        int cellW = (width - marginSide*2 - (cols-1)*gap) / cols;
+        // 1) Đọc Level 1 từ resources/levels/Map.txt
+        // File Map.txt dạng:
+        // 1
+        // NNSNNSNNSN
+        // NSSNNNSSNN
+        // ...
+        // BREAK
+        java.util.List<String> rows = LevelLoader.load("levels/Map.txt", 1);
+
+        // 2) Tính layout giống hệt phiên bản hard-code của bạn
+        int cols = rows.stream().mapToInt(String::length).max().orElse(0);
+        int rowsCount = rows.size();
+
+        int marginTop  = 60;
+        int marginSide = 20;
+        int gap        = 4;
+        int cellW = (width - marginSide * 2 - (cols - 1) * gap) / Math.max(cols, 1);
         int cellH = 24;
 
-        for (int r = 0; r < rows; r++) {
-            for (int c = 0; c < cols; c++) {
+        // 3) Tạo bricks từ ký tự map bằng BrickFactory
+        bricks.clear();
+        for (int r = 0; r < rowsCount; r++) {
+            String line = rows.get(r);
+            for (int c = 0; c < line.length(); c++) {
                 int x = marginSide + c * (cellW + gap);
-                int y = marginTop + r * (cellH + gap);
-                if (map[r][c] == 'N') bricks.add(new NormalBricks(x, y, cellW, cellH));
-                else if (map[r][c] == 'S') bricks.add(new StrongBricks(x, y, cellW, cellH));
-                else if (map[r][c] == 'I') bricks.add(new IndestructibleBrick(x, y, cellW, cellH));
-                else if (map[r][c] == 'E') bricks.add(new ExplosiveBrick(x, y, cellW, cellH));
+                int y = marginTop  + r * (cellH + gap);
+
+                char sym = line.charAt(c);
+                AbstractBrick b = BrickFactory.fromSymbol(sym, x, y, cellW, cellH);
+                if (b != null) {
+                    bricks.add(b);
+                }
             }
         }
     }
@@ -73,7 +86,9 @@ public class GameManager {
         if (ball.getY() > height) {
             lives--;
             if (lives <= 0) running = false;
-            else ball.resetToPaddle(paddle);
+            else {
+                ball.resetToPaddle(paddle);
+            }
         }
 
         // Thắng nếu mọi gạch vỡ

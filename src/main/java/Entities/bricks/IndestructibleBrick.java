@@ -3,7 +3,7 @@ package Entities.bricks;
 import java.awt.*;
 import java.util.List;
 
-import Entities.Ball;
+import Entities.*;
 
 public class IndestructibleBrick extends AbstractBrick {
     public IndestructibleBrick(int x, int y, int width, int height) {
@@ -11,13 +11,11 @@ public class IndestructibleBrick extends AbstractBrick {
     }
 
     public void update() {
-            // gạch không bao giờ bị phá
         destroyed = false;
     }
 
     @Override
     public boolean takeHit(List<AbstractBrick> allBricks) {
-        // Gạch không bao giờ bị phá
         return false;
     }
 

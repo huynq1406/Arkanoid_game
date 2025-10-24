@@ -18,7 +18,7 @@ public abstract class AbstractBrick extends GameObject {
         return destroyed;
     }
 
-    public boolean takeHit(List<AbstractBrick> bricks) {
+    public boolean takeHit(List<AbstractBrick> allBricks) {
         if (destroyed) return false;
         hitPoints--;
         if (hitPoints <= 0) {
@@ -32,5 +32,6 @@ public abstract class AbstractBrick extends GameObject {
 
     @Override
     public abstract void render(Graphics g);
+
 }
 

@@ -11,9 +11,11 @@ import java.awt.Graphics2D;
 public class AbstractLevel {
     private List<AbstractBrick> bricks;
     private List<IPowerUp> powerUps;
-    private final Ball ball;
-    private final Paddle paddle;
+    private Ball ball;
+    private Paddle paddle;
 
+    public AbstractLevel(){
+    }
     public AbstractLevel(int levelNum) {
         loadBricks(levelNum);
         paddle = new Paddle(350, 550, 100, 15);
@@ -21,21 +23,7 @@ public class AbstractLevel {
         powerUps = new ArrayList<>();
     }
 
-    /**
-     *
-     * Phần tải brick trong mỗi ván game;
-     * Đối với x, y là tọa độ
-     */
     public void loadBricks(int levelNum) {
-        /** không biết có nên tạo biến cố định không (vì dài)
-         *
-         * int startX = 60;
-         *     int startY = 60;
-         *     int brickWidth = 60;
-         *     int brickHeight = 20;
-         *     int hSpacing = 10;  // khoảng cách ngang giữa các viên
-         *     int vSpacing = 5;   // khoảng cách dọc giữa các hàng
-         */
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 5; col++) {
                 int x = 60 + row * 60; // int x = startX + col * (brickWidth + hSpacing);
@@ -61,8 +49,6 @@ public class AbstractLevel {
     }
 
     private void checkCollisions() {
-        // Va chạm bóng - gạch, bóng - paddle, paddle - powerup
-
     }
 
     public boolean isCompleted() {
