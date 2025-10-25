@@ -1,170 +1,142 @@
 package GameManager;
 
-import Entities.*;
-import Entities.PowerUp.BigPaddlePW;
-import Entities.PowerUp.PowerUp;
+import Entities.Ball;
+import Entities.Paddle;
 import Entities.bricks.*;
-import Levels.LevelLoader;
-import Entities.bricks.AbstractBrick;
-import Entities.BrickFactory;
+import Levels.TextMapLevel;
+import javafx.animation.AnimationTimer;
+import javafx.geometry.Bounds;
+import javafx.geometry.BoundingBox;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 
-import java.awt.*;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class GameManager {
     private final int width;
     private final int height;
 
-    private final Paddle paddle;
+    private final GamePanel panel;
+    private List<AbstractBrick> bricks = new ArrayList<>();
     private final Ball ball;
-    private final List<AbstractBrick> bricks = new ArrayList<>();
-    private List<PowerUp> powerUps = new ArrayList<>();
+    private final Paddle paddle;
+    private List<Entities.PowerUp.PowerUp> powerUps = new ArrayList<>();
 
-    private boolean running = true;
-    private boolean win = false;
-    private int lives = 3;
+    private TextMapLevel currentLevel;
+    private AnimationTimer loop;
+
     private int score = 0;
 
-    public GameManager(int width, int height) {
+    private Image explosionImage;
+    private final List<ExplosionEffect> effects = new ArrayList<>();
+
+    private enum CollisionSide { NONE, LEFT, RIGHT, TOP, BOTTOM }
+
+    public GameManager(int width, int height, GamePanel panel, Ball ball, Paddle paddle) {
         this.width = width;
         this.height = height;
+        this.panel  = panel;
+        this.ball   = ball;
+        this.paddle = paddle;
 
-        paddle = new Paddle(width/2 - 50, height - 40, 100, 14);
-        ball = new Ball(paddle.getX() + paddle.getWidth()/2, paddle.getY() - 10, 10);
-        ball.resetToPaddle(paddle);
-
-        buildLevel();
-    }
-
-    private void buildLevel() {
-        // 1) Đọc Level 1 từ resources/levels/Map.txt
-        // File Map.txt dạng:
-        // 1
-        // NNSNNSNNSN
-        // NSSNNNSSNN
-        // ...
-        // BREAK
-        java.util.List<String> rows = LevelLoader.load("levels/Map.txt", 1);
-
-        // 2) Tính layout giống hệt phiên bản hard-code của bạn
-        int cols = rows.stream().mapToInt(String::length).max().orElse(0);
-        int rowsCount = rows.size();
-
-        int marginTop  = 60;
-        int marginSide = 20;
-        int gap        = 4;
-        int cellW = (width - marginSide * 2 - (cols - 1) * gap) / Math.max(cols, 1);
-        int cellH = 24;
-
-        // 3) Tạo bricks từ ký tự map bằng BrickFactory
-        bricks.clear();
-        for (int r = 0; r < rowsCount; r++) {
-            String line = rows.get(r);
-            for (int c = 0; c < line.length(); c++) {
-                int x = marginSide + c * (cellW + gap);
-                int y = marginTop  + r * (cellH + gap);
-
-                char sym = line.charAt(c);
-                AbstractBrick b = BrickFactory.fromSymbol(sym, x, y, cellW, cellH);
-                if (b != null) {
-                    bricks.add(b);
-                }
+        // try to load explosion image from resources (/images/explosion.png)
+        InputStream is = getClass().getResourceAsStream("/images/explosion.png");
+        if (is != null) {
+            try {
+                explosionImage = new Image(is);
+            } catch (Exception ex) {
+                explosionImage = null;
             }
+        } else {
+            explosionImage = null;
         }
     }
 
-    public void update(double dt) {
-        if (!running) return;
+    public void buildLevel() {
+        currentLevel = new TextMapLevel("levels/Map.txt", 1);
+        currentLevel.buildFromMap(GamePanel.WIDTH);
 
-        ball.update(dt, paddle);
+        bricks = currentLevel.getBricks();
+        panel.setRefs(ball, paddle, bricks);
+    }
+
+    public void start() {
+        if (loop != null) loop.stop();
+        loop = new AnimationTimer() {
+            @Override public void handle(long now) { tick(); }
+        };
+        loop.start();
+    }
+
+    private void tick() {
+        // If Ball/Paddle have update() methods, call them here
+        // e.g. ball.update(); paddle.update();
+
         checkCollisionWithWalls();
         checkCollisionWithPaddle();
         checkCollisionWithBricks();
+        removeDestroyedBricks();
 
-        // Bóng rơi khỏi đáy
-        if (ball.getY() > height) {
-            lives--;
-            if (lives <= 0) running = false;
-            else {
-                ball.resetToPaddle(paddle);
-            }
-        }
+        // render game objects via JavaFX canvas
+        panel.render();
 
-        // Thắng nếu mọi gạch vỡ
-        win = bricks.stream().filter(b -> !(b instanceof IndestructibleBrick)).allMatch(AbstractBrick::isDestroyed);
-        if (win) running = false;
+        // update and render transient effects (explosions, etc.)
+        updateAndRenderEffects();
+
+        // draw HUD (score, lives) on same canvas
+        drawHUD();
     }
 
-    public void launchBall() {
-//        if (!ball.isLaunched())
-        ball.launch();
+    /* --- Collision helpers using JavaFX Bounds built from existing getters --- */
+
+    private Bounds boundsFrom(Ball b) {
+        return new BoundingBox(b.getX(), b.getY(), b.getWidth(), b.getHeight());
+    }
+    private Bounds boundsFrom(Paddle p) {
+        return new BoundingBox(p.getX(), p.getY(), p.getWidth(), p.getHeight());
+    }
+    private Bounds boundsFrom(AbstractBrick br) {
+        return new BoundingBox(br.getX(), br.getY(), br.getWidth(), br.getHeight());
     }
 
-    public void movePaddleToMouseX(int mouseX) {
-        paddle.setCenterX(mouseX);
-        paddle.clamp(0, width);
-    }
+    private CollisionSide checkCollision(Bounds a, Bounds b) {
+        if (!a.intersects(b)) return CollisionSide.NONE;
 
-    public void restart() {
-        bricks.clear();
-        lives = 3;
-        score = 0;
-        win = false;
-        running = true;
-        paddle.setX(width/2 - paddle.getWidth()/2); paddle.setY(height - 40);
-        ball.resetToPaddle(paddle);
-        buildLevel();
-    }
-    public boolean isRunning() {
-        return running;
-    }
+        double aLeft = a.getMinX(), aRight = a.getMaxX(), aTop = a.getMinY(), aBottom = a.getMaxY();
+        double bLeft = b.getMinX(), bRight = b.getMaxX(), bTop = b.getMinY(), bBottom = b.getMaxY();
 
-    private enum Side { NONE, LEFT, RIGHT, TOP, BOTTOM }
+        double overlapLeft   = aRight - bLeft;   // a chèn vào b từ trái
+        double overlapRight  = bRight - aLeft;   // a chèn vào b từ phải
+        double overlapTop    = aBottom - bTop;   // a chèn vào b từ trên
+        double overlapBottom = bBottom - aTop;   // a chèn vào b từ dưới
 
-    private void reflectBall(double nx, double ny) {
-        double vx = ball.getDirX(), vy = ball.getDirY();
-        double dot = vx * nx + vy * ny;
-        double rx = vx - 2 * dot * nx;
-        double ry = vy - 2 * dot * ny;
-        ball.setDirection(rx, ry);
-    }
-
-    private Side checkCollision(Rectangle a, Rectangle b) {
-        if (!a.intersects(b)) return Side.NONE;
-
-        int aRight = a.x + a.width, aBottom = a.y + a.height;
-        int bRight = b.x + b.width, bBottom = b.y + b.height;
-
-        int overlapLeft   = aRight - b.x;   // a chèn vào b từ trái
-        int overlapRight  = bRight - a.x;  // a chèn vào b từ phải
-        int overlapTop    = aBottom - b.y; // a chèn vào b từ trên
-        int overlapBottom = bBottom - a.y; // a chèn vào b từ dưới
-
-        int minHoriz = Math.min(overlapLeft, overlapRight);
-        int minVert  = Math.min(overlapTop, overlapBottom);
+        double minHoriz = Math.min(overlapLeft, overlapRight);
+        double minVert  = Math.min(overlapTop, overlapBottom);
 
         if (minHoriz < minVert) {
-            // ưu tiên trục X
-            return (overlapLeft < overlapRight) ? Side.LEFT : Side.RIGHT;
+            return (overlapLeft < overlapRight) ? CollisionSide.LEFT : CollisionSide.RIGHT;
         } else {
-            return (overlapTop < overlapBottom) ? Side.TOP : Side.BOTTOM;
+            return (overlapTop < overlapBottom) ? CollisionSide.TOP : CollisionSide.BOTTOM;
         }
     }
 
     private void checkCollisionWithWalls() {
-        Rectangle br = ball.getBounds();
-        if (br.x <= 0 && ball.getDx() < 0)          reflectBall( 1, 0); // tường trái
-        if (br.x + br.width >= width && ball.getDx() > 0) reflectBall(-1, 0); // tường phải
-        if (br.y <= 0 && ball.getDy() < 0)          reflectBall( 0, 1); // trần
-        // đáy xử lý ở update(): mất mạng
+        Bounds br = boundsFrom(ball);
+        if (br.getMinX() <= 0 && ball.getDx() < 0)                 reflectBall(1, 0);  // left wall
+        if (br.getMaxX() >= width && ball.getDx() > 0)             reflectBall(-1, 0); // right wall
+        if (br.getMinY() <= 0 && ball.getDy() < 0)                 reflectBall(0, 1);  // ceiling
+        // bottom handled elsewhere (life loss)
     }
 
     private void checkCollisionWithPaddle() {
-        Rectangle side = ball.getBounds();
-        if (side.intersects(paddle.getBounds()) && ball.getDy() > 0) {
-            reflectBall(0, -1); // bật ngược lên
-            // Ép góc nảy tối thiểu theo trục Y (tránh gần-đứng)
+        Bounds bBall = boundsFrom(ball);
+        Bounds bPaddle = boundsFrom(paddle);
+        if (bBall.intersects(bPaddle) && ball.getDy() > 0) {
+            reflectBall(0, -1); // bounce up
             double dirX = ball.getDirX(), dirY = ball.getDirY();
             double minAbsY = 0.35;
             if (Math.abs(dirY) < minAbsY) {
@@ -175,30 +147,32 @@ public class GameManager {
     }
 
     private void checkCollisionWithBricks() {
-        Rectangle bRect = ball.getBounds();
+        Bounds bBall = boundsFrom(ball);
         for (AbstractBrick brick : bricks) {
             if (brick.isDestroyed()) {
                 if (Math.random() < 0.99) {
-                    PowerUp p = new BigPaddlePW(brick.getX(), brick.getY());
-                    powerUps.add(p);
+                    powerUps.add(new Entities.PowerUp.BigPaddlePW(brick.getX(), brick.getY(),paddle));
                 }
                 continue;
             }
-            Side side = checkCollision(bRect, brick.getBounds());
-            if (side == Side.NONE) continue;
+            CollisionSide side = checkCollision(bBall, boundsFrom(brick));
+            if (side == CollisionSide.NONE) continue;
 
             switch (side) {
                 case LEFT:  reflectBall(-1, 0); break;
                 case RIGHT: reflectBall( 1, 0); break;
                 case TOP:   reflectBall( 0,-1); break;
                 case BOTTOM:reflectBall( 0, 1); break;
+                default: break;
             }
 
             boolean destroyedNow = brick.takeHit(bricks);
             if (destroyedNow) {
+                // spawn explosion effect at brick's position
+                effects.add(new ExplosionEffect(brick.getX(), brick.getY(), 30, explosionImage));
+
                 score += (brick instanceof StrongBricks) ? 150 : 50;
                 score += (brick instanceof NormalBricks) ? 100 : 0;
-                // tăng tốc nhẹ, có trần
                 double newSpeed = Math.min(420, ball.getSpeed() * 1.02);
                 ball.setSpeed(newSpeed);
             } else if (brick instanceof ExplosiveBrick) {
@@ -207,27 +181,83 @@ public class GameManager {
         }
     }
 
-    public void render(Graphics g) {
-        g.setColor(new Color(20, 20, 30));
-        g.fillRect(0, 0, width, height);
-        g.setColor(new Color(80, 80, 100));
-        g.drawRect(0, 0, width-1, height-1);
+    private void removeDestroyedBricks() {
+        Iterator<AbstractBrick> it = bricks.iterator();
+        while (it.hasNext()) {
+            AbstractBrick b = it.next();
+            if (b.isDestroyed()) it.remove();
+        }
+        panel.setRefs(ball, paddle, bricks);
+    }
 
-        for (AbstractBrick br : bricks)
-            br.render(g);
-        paddle.render(g);
-        ball.render(g);
+    private void reflectBall(int flipX, int flipY) {
+        double dirX = ball.getDirX();
+        double dirY = ball.getDirY();
+        if (flipX != 0) dirX = -dirX;
+        if (flipY != 0) dirY = -dirY;
+        ball.setDirection(dirX, dirY);
+    }
 
-        g.setColor(Color.WHITE);
-        g.drawString("Lives: " + lives + "   Score: " + score, 10, 16);
-        if (!running) {
-            String text = (win ? "YOU WIN!" : "GAME OVER");
-            g.setFont(g.getFont().deriveFont(Font.BOLD, 24f));
-            g.drawString(text, width/2 - 70, height/2);
-            g.setFont(g.getFont().deriveFont(Font.PLAIN, 12f));
-            g.drawString("Click để chơi lại", width/2 - 55, height/2 + 20);
-        } else if (!ball.isLaunched()) {
-            g.drawString("Click để bắn bóng", width/2 - 55, height - 10);
+    private void drawHUD() {
+        GraphicsContext g = panel.getGraphicsContext();
+        // draw simple score text on top-left (overlay)
+        g.setFill(Color.WHITE);
+        g.fillText("Score: " + score, 10, 20);
+        // add more HUD drawing here (lives, level, etc.)
+    }
+
+    private void updateAndRenderEffects() {
+        GraphicsContext g = panel.getGraphicsContext();
+        Iterator<ExplosionEffect> it = effects.iterator();
+        while (it.hasNext()) {
+            ExplosionEffect e = it.next();
+            e.update();
+            e.render(g);
+            if (e.isFinished()) it.remove();
+        }
+    }
+
+    // simple transient effect for destroyed bricks
+    private static class ExplosionEffect {
+        private final double x;
+        private final double y;
+        private int timer;
+        private final int duration;
+        private final Image img;
+        private static final double SIZE = 48;
+
+        ExplosionEffect(double x, double y, int duration, Image img) {
+            this.x = x;
+            this.y = y;
+            this.duration = duration;
+            this.img = img;
+            this.timer = 0;
+        }
+
+        void update() {
+            timer++;
+        }
+
+        void render(GraphicsContext g) {
+            double alpha = 1.0 - ((double) timer / Math.max(1, duration));
+            g.save();
+            g.setGlobalAlpha(Math.max(0, alpha));
+            if (img != null) {
+                g.drawImage(img, x, y, SIZE, SIZE);
+            } else {
+                g.setFill(Color.ORANGE);
+                g.fillOval(x, y, SIZE, SIZE);
+                g.setStroke(Color.YELLOW);
+                g.strokeOval(x, y, SIZE, SIZE);
+            }
+            g.restore();
+        }
+
+        boolean isFinished() {
+            return timer >= duration;
         }
     }
 }
+
+
+

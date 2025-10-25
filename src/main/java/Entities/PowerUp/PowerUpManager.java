@@ -20,7 +20,7 @@ public class PowerUpManager {
         while (it.hasNext()) {
             PowerUp p = it.next();
             if (p instanceof IPowerUp) {
-                IPowerUp ip = p;
+                IPowerUp ip = (IPowerUp) p;
                 ip.update();
                 // xóa nếu power-up đã hết hiệu lực hoặc ra khỏi màn hình
                 if (!ip.isActive() && p.getY() > 800) {

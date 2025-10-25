@@ -6,7 +6,7 @@ import ObjectManager.MovableObject;
 import Entities.PowerUp.*;
 
 public class Paddle extends MovableObject {
-    protected BigPaddlePW bp = new BigPaddlePW(21,23);
+    protected BigPaddlePW bp = new BigPaddlePW(21,23, this);
 
     public Paddle(int x, int y, int width, int height) {
         super(x,y,width,height);

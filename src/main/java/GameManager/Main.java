@@ -1,63 +1,70 @@
 package GameManager;
 
-import javax.swing.*;
-import java.awt.*;
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.stage.Stage;
 
-public class Main {
-    private JFrame frame;
-    private MainMenuPanel mainMenuPanel;
+/**
+ * JavaFX-based launcher that reuses MainMenuPane and GamePanel.
+ * - Keeps your original menu callbacks semantics.
+ * - Replaces Swing usage (JFrame / MainMenuPanel) with JavaFX.
+ */
+public class Main extends Application {
+    private Stage primaryStage;
+    private Scene scene;
+    private MainMenuPane menuPane;
     private GamePanel gamePanel;
 
-    public Main() {
-        // Tạo cửa sổ chính
-        frame = new JFrame("Golf Game");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setResizable(false);
+    @Override
+    public void start(Stage primaryStage) {
+        this.primaryStage = primaryStage;
 
-        // Khởi tạo menu chính
-        mainMenuPanel = new MainMenuPanel(
-                e -> startGame(),           // Nút Play
-                e -> showHighScore(),       // Nút High Score
-                e -> quitGame()             // Nút Quit
+        // Create menu with the same callbacks you had in Swing
+        menuPane = new MainMenuPane(
+                (ActionEvent e) -> startGame(),
+                (ActionEvent e) -> showHighScore(),
+                (ActionEvent e) -> quitGame()
         );
 
-        // Hiển thị menu đầu tiên
-        frame.getContentPane().add(mainMenuPanel);
-        frame.pack();
-        frame.setLocationRelativeTo(null); // Căn giữa
-        frame.setVisible(true);
+        scene = new Scene(menuPane, GamePanel.WIDTH, GamePanel.HEIGHT);
+        primaryStage.setTitle("Golf Game");
+        primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
+        primaryStage.show();
     }
 
     private void startGame() {
-        // Khi bấm "Play" -> chuyển sang GamePanel
-        if (gamePanel == null)
+        if (gamePanel == null) {
             gamePanel = new GamePanel();
+        }
+        // swap root to game panel
+        scene.setRoot(gamePanel);
 
-        frame.getContentPane().removeAll();   // Xóa panel cũ (menu)
-        frame.getContentPane().add(gamePanel);
-        frame.revalidate();
-        frame.repaint();
+        // give focus to the JavaFX node
+        gamePanel.requestFocus();
 
-        gamePanel.requestFocusInWindow();
-        gamePanel.start(); // nếu GamePanel có phương thức start()
+        // If you later wire GameManager, call its start() here.
+        // e.g. myGameManager.start();
     }
 
     private void showHighScore() {
-        JOptionPane.showMessageDialog(frame, "High Scores will be added soon!",
-                "High Score", JOptionPane.INFORMATION_MESSAGE);
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.initOwner(primaryStage);
+        alert.setTitle("High Score");
+        alert.setHeaderText(null);
+        alert.setContentText("High Scores will be added soon!");
+        alert.showAndWait();
     }
 
     private void quitGame() {
-        int confirm = JOptionPane.showConfirmDialog(frame,
-                "Do you really want to quit?",
-                "Quit", JOptionPane.YES_NO_OPTION);
-        if (confirm == JOptionPane.YES_OPTION) {
-            System.exit(0);
-        }
+        Platform.exit();
     }
 
     public static void main(String[] args) {
-        // Khởi động giao diện trong EDT
-        SwingUtilities.invokeLater(Main::new);
+        launch(args);
     }
 }

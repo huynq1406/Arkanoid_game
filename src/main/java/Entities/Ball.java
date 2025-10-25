@@ -2,6 +2,7 @@ package Entities;
 
 import java.awt.*;
 import ObjectManager.*;
+import javafx.scene.canvas.GraphicsContext;
 
 public class Ball extends MovableObject {
     private final int radius;
@@ -14,8 +15,12 @@ public class Ball extends MovableObject {
     public Ball(int x, int y, int radius) {
         super(x - radius, y - radius, radius * 2, radius * 2);
         this.radius = radius;
-        this.speed = 220;
+        this.speed = 300;
         setDirection(0.5, -1); // HƯỚNG MẶC ĐỊNH THEO YÊU CẦU
+    }
+
+    public int getDiameter() {
+        return radius * 2;
     }
 
     public void setDirection(double newDirX, double newDirY) {
@@ -80,5 +85,12 @@ public class Ball extends MovableObject {
     public void render(Graphics g) {
         g.setColor(Color.WHITE);
         g.fillOval(x, y, width, height);
+    }
+
+    public void drawBall(GraphicsContext g, Ball b) {
+        // TODO: nếu Ball đã có draw(g), gọi b.draw(g);
+        g.setFill(javafx.scene.paint.Color.web("#FF7043"));
+        int d = b.getDiameter();
+        g.fillOval(b.getX(), b.getY(), d, d);
     }
 }

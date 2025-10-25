@@ -1,80 +1,80 @@
 package GameManager;
 
-import javax.swing.JPanel;
-import javax.swing.Timer;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import Entities.Ball;
+import Entities.Paddle;
+import Entities.bricks.AbstractBrick;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
 
-/**
- * Panel chính của game.
- * - Điều khiển chuột: move -> paddle theo chuột.
- * - Click: nếu đang chơi -> bắn; nếu đang dừng (win/lose) -> restart.
- * - Timer 60 FPS.
- */
-public class GamePanel extends JPanel {
-    public static final int WIDTH = 800;
+import java.util.ArrayList;
+import java.util.List;
+
+public class GamePanel extends Pane {
+    public static final int WIDTH  = 800;   // giữ hằng như Swing cũ
     public static final int HEIGHT = 600;
 
-    private final GameManager game;
-    private long lastTickNanos;
-    private final Timer timer;
+    private final Canvas canvas = new Canvas(WIDTH, HEIGHT);
+
+    private Ball ball;
+    private Paddle paddle;
+    private List<AbstractBrick> bricks = new ArrayList<>();
 
     public GamePanel() {
-        setPreferredSize(new Dimension(WIDTH, HEIGHT));
-        setFocusable(true);
-        requestFocusInWindow();
-
-        game = new GameManager(WIDTH, HEIGHT);
-
-        // Move/drag chuột -> paddle bám theo
-        addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                game.movePaddleToMouseX(e.getX());
-                repaint();
-            }
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                game.movePaddleToMouseX(e.getX());
-                repaint();
-            }
-        });
-
-        // Click: playing -> launch, stopped -> restart
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (!game.isRunning()) game.restart();
-                else game.launchBall();
-                repaint();
-            }
-        });
-
-        lastTickNanos = System.nanoTime();
-        timer = new Timer(1000 / 60, e -> tick());
+        setPrefSize(WIDTH, HEIGHT);
+        getChildren().add(canvas);
     }
 
-    /** Bắt đầu vòng lặp game (Timer). */
-    public void start() {
-        timer.start();
+    public void setRefs(Ball ball, Paddle paddle, List<AbstractBrick> bricks) {
+        this.ball   = ball;
+        this.paddle = paddle;
+        this.bricks = (bricks == null) ? new ArrayList<>() : bricks;
     }
 
-    private void tick() {
-        long now = System.nanoTime();
-        double dt = (now - lastTickNanos) / 1_000_000_000.0;
-        if (dt > 0.05) dt = 0.05; // clamp khi bị lag
-        lastTickNanos = now;
-
-        game.update(dt);
-        repaint();
+    /** Return canvas GraphicsContext so GameManager can draw HUD/overlays */
+    public GraphicsContext getGraphicsContext() {
+        return canvas.getGraphicsContext2D();
     }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        game.render(g);
+    /** JavaFX: gọi mỗi frame để vẽ (thay paintComponent) */
+    public void render() {
+        GraphicsContext g = canvas.getGraphicsContext2D();
+
+        // nền
+        g.setFill(Color.BLACK);
+        g.fillRect(0, 0, WIDTH, HEIGHT);
+
+        // bricks
+        if (bricks != null) {
+            for (AbstractBrick b : bricks) drawBrick(g, b);
+        }
+
+        // paddle & ball (nếu class của bạn có draw(g), hãy gọi trực tiếp)
+        if (paddle != null) drawPaddle(g, paddle);
+        if (ball   != null) {
+            // keep existing API: ball.drawBall(g, ball) or adapt to ball.draw(g)
+            try {
+                ball.drawBall(g, ball);
+            } catch (Throwable t) {
+                // fallback basic draw using position/size if drawBall not present
+                g.setFill(Color.WHITE);
+                g.fillOval(ball.getX(), ball.getY(), ball.getWidth(), ball.getHeight());
+            }
+        }
+    }
+
+    private void drawBrick(GraphicsContext g, AbstractBrick b) {
+        // TODO: nếu Brick có sprite/skin riêng, thay bằng b.draw(g)
+        g.setFill(b.isDestroyed() ? Color.web("#3C3C3C") : Color.web("#4FC3F7"));
+        g.fillRect(b.getX(), b.getY(), b.getWidth(), b.getHeight());
+        g.setStroke(Color.DARKGRAY);
+        g.strokeRect(b.getX(), b.getY(), b.getWidth(), b.getHeight());
+    }
+
+    private void drawPaddle(GraphicsContext g, Paddle p) {
+        // TODO: nếu Paddle đã có draw(g), gọi p.draw(g);
+        g.setFill(Color.web("#FFEE58"));
+        g.fillRoundRect(p.getX(), p.getY(), p.getWidth(), p.getHeight(), 10, 10);
     }
 }
