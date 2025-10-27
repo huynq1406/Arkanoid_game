@@ -18,7 +18,6 @@ public class MainApp extends Application {
 
         Scene scene = new Scene(menu, GamePanel.WIDTH, GamePanel.HEIGHT); // reuse your existing constants
         primaryStage.setTitle("Game Main Menu (JavaFX)");
-        primaryStage.setScene(scene);
         primaryStage.show();
     }
 
