@@ -8,11 +8,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
 
-/**
- * JavaFX-based launcher that reuses MainMenuPane and GamePanel.
- * - Keeps your original menu callbacks semantics.
- * - Replaces Swing usage (JFrame / MainMenuPanel) with JavaFX.
- */
 public class Main extends Application {
     private Stage primaryStage;
     private Scene scene;
@@ -22,14 +17,11 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) {
         this.primaryStage = primaryStage;
-
-        // Create menu with the same callbacks you had in Swing
         menuPane = new MainMenuPane(
                 (ActionEvent e) -> startGame(),
                 (ActionEvent e) -> showHighScore(),
                 (ActionEvent e) -> quitGame()
         );
-
         scene = new Scene(menuPane, GamePanel.WIDTH, GamePanel.HEIGHT);
         primaryStage.setTitle("Golf Game");
         primaryStage.setScene(scene);
@@ -41,14 +33,8 @@ public class Main extends Application {
         if (gamePanel == null) {
             gamePanel = new GamePanel();
         }
-        // swap root to game panel
         scene.setRoot(gamePanel);
-
-        // give focus to the JavaFX node
         gamePanel.requestFocus();
-
-        // If you later wire GameManager, call its start() here.
-        // e.g. myGameManager.start();
     }
 
     private void showHighScore() {

@@ -10,6 +10,7 @@ public class MainApp extends Application {
         MainMenuPane menu = new MainMenuPane(
                 e -> System.out.println("Play clicked"),
                 e -> System.out.println("High Score clicked"),
+                //e -> System.out.println("Settings clicked"),
                 e -> {
                     System.out.println("Quit clicked");
                     primaryStage.close();

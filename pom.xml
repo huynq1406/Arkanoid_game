@@ -10,14 +10,16 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <!-- Dùng release thay cho source/target -->
         <maven.compiler.release>24</maven.compiler.release>
-        <!-- JavaFX 23.0.1 chạy ổn với JDK 24 -->
         <javafx.version>23.0.1</javafx.version>
     </properties>
 
     <dependencies>
-        <!-- JavaFX (đủ cho UI cơ bản). Thêm modules khác khi cần: media, web, swing... -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-media</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
