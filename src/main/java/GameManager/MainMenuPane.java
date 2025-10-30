@@ -18,7 +18,7 @@ import javafx.scene.text.Font;
 public class MainMenuPane extends StackPane {
     public MainMenuPane(EventHandler<ActionEvent> playAction,
                         EventHandler<ActionEvent> highScoreAction,
-                        EventHandler<ActionEvent> quitAction)  {
+                        EventHandler<ActionEvent> quitAction) {
 //                        EventHandler<ActionEvent> settingAction) {
         MediaView mediaView = null;
         try {
@@ -61,46 +61,6 @@ public class MainMenuPane extends StackPane {
             setStyle("-fx-menu-error");
         }
     }
-
-        // Background image
-//        Image bgImage = null;
-//        try {
-//            bgImage = new Image(getClass().getResourceAsStream("/images.jpg"));
-//        } catch (Exception ex) {
-//            System.err.println("Cannot load background image: " + ex.getMessage());
-//        }
-//        ImageView bgView = new ImageView();
-//        if (bgImage != null) {
-//            bgView.setImage(bgImage);
-//            bgView.setPreserveRatio(false);
-//            // make background fill the pane
-//            bgView.fitWidthProperty().bind(widthProperty());
-//            bgView.fitHeightProperty().bind(heightProperty());
-//        }
-//
-//        // Buttons container
-//        VBox vbox = new VBox(12);
-//        vbox.setAlignment(Pos.CENTER);
-//        vbox.setPadding(new Insets(20));
-//
-//        Button playButton = createButton("Play");
-//        Button highScoreButton = createButton("High Score");
-//        Button quitButton = createButton("Quit");
-//
-//        playButton.setOnAction(playAction);
-//        highScoreButton.setOnAction(highScoreAction);
-//        quitButton.setOnAction(quitAction);
-//
-//        vbox.getChildren().addAll(playButton, highScoreButton, quitButton);
-//
-//        // Add background first, then controls on top
-//        if (bgImage != null) {
-//            getChildren().addAll(bgView, vbox);
-//        } else {
-//            getChildren().add(vbox);
-//            setStyle("-fx-background-color: #14141E;"); // fallback background color
-//        }
-//    }
 
     private Button createButton(String text) {
         Button b = new Button(text);

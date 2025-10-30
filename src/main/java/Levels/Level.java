@@ -8,15 +8,14 @@ import Entities.Ball;
 import Entities.Paddle;
 import java.awt.Graphics2D;
 
-public class AbstractLevel {
+public class Level {
     private List<AbstractBrick> bricks;
     private List<IPowerUp> powerUps;
     private Ball ball;
     private Paddle paddle;
 
-    public AbstractLevel(){
-    }
-    public AbstractLevel(int levelNum) {
+    public Level(){}
+    public Level(int levelNum) {
         loadBricks(levelNum);
         paddle = new Paddle(350, 550, 100, 15);
         ball = new Ball(400, 530, 8);

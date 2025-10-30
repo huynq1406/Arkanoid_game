@@ -57,7 +57,7 @@ public class GameManager {
     }
 
     public void buildLevel() {
-        currentLevel = new TextMapLevel("levels/Map.txt", 1);
+        currentLevel = new TextMapLevel("Levels/Map.txt", 1);
         currentLevel.buildFromMap(GamePanel.WIDTH);
 
         bricks = currentLevel.getBricks();
