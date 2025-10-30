@@ -5,10 +5,9 @@ import java.util.List;
 
 import Entities.BrickFactory;
 import Entities.bricks.AbstractBrick;
-import GameManager.GamePanel;
 
 
-public class TextMapLevel extends AbstractLevel {
+public class TextMapLevel extends Level {
 
     private final String resourcePath; // ví dụ "levels/Map.txt"
     private final int levelIndex;      // ví dụ 1
@@ -29,7 +28,7 @@ public class TextMapLevel extends AbstractLevel {
     }
 
     public void buildFromMap(int panelWidth) {
-        List<String> rows = LevelLoader.load(resourcePath, levelIndex);
+        List<String> rows = LevelLoader.load("levels/Map.txt", levelIndex);
 
         // 2) Tính kích thước gạch (auto-fit theo panel)
         int cols = rows.stream().mapToInt(String::length).max().orElse(0);

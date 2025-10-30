@@ -8,7 +8,6 @@ import java.util.List;
 public final class LevelLoader {
 
     private LevelLoader() {}
-
     public static List<String> load(String resourcePath, int levelIndex) {
         List<String> lines = new ArrayList<>();
 

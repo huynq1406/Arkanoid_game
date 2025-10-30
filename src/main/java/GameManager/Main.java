@@ -12,6 +12,7 @@ public class Main extends Application {
     private Stage primaryStage;
     private Scene scene;
     private MainMenuPane menuPane;
+    private GameManager gameManager;
     private GamePanel gamePanel;
 
     @Override
@@ -23,10 +24,11 @@ public class Main extends Application {
                 (ActionEvent e) -> quitGame()
         );
         scene = new Scene(menuPane, GamePanel.WIDTH, GamePanel.HEIGHT);
-        primaryStage.setTitle("Golf Game");
+        primaryStage.setTitle("Arkanoid Game");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
+
     }
 
     private void startGame() {
@@ -35,6 +37,26 @@ public class Main extends Application {
         }
         scene.setRoot(gamePanel);
         gamePanel.requestFocus();
+
+        this.gameManager = new GameManager(
+                GamePanel.WIDTH,
+                GamePanel.HEIGHT,
+                gamePanel,
+                new Entities.Ball(400, 300, 10),
+                new Entities.Paddle(350, 550, 100, 20)
+        );
+
+        gameManager.buildLevel();
+        gameManager.start();
+    }
+
+    private void showSettings() {
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.initOwner(primaryStage);
+        alert.setTitle("Settings");
+        alert.setHeaderText(null);
+        alert.setContentText("Settings will be added soon!");
+        alert.showAndWait();
     }
 
     private void showHighScore() {

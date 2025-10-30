@@ -7,4 +7,7 @@ module Arkanoid {
     requires javafx.media;
 
     exports GameManager to javafx.graphics;
+    exports Entities;
+    exports Entities.bricks;
+    exports Levels;
 }
