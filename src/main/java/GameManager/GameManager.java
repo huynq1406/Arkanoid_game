@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+
 public class GameManager {
     private final int width;
     private final int height;
@@ -57,7 +58,8 @@ public class GameManager {
     }
 
     public void buildLevel() {
-        currentLevel = new TextMapLevel("Levels/Map.txt", 1);
+        GraphicsContext gc = panel.getGraphicsContext();
+        currentLevel = new TextMapLevel("levels/Map.txt", 1, gc);
         currentLevel.buildFromMap(GamePanel.WIDTH);
 
         bricks = currentLevel.getBricks();
@@ -72,10 +74,23 @@ public class GameManager {
         loop.start();
     }
 
+    public void onMouseMove(double mouseX) {
+        paddle.setCenterX((int) mouseX);
+        paddle.clamp(0, width);
+    }
+
+    public void onMousePress() {
+        if (!ball.isLaunched()) {
+            ball.launch();
+        }
+    }
+
+
     private void tick() {
         // If Ball/Paddle have update() methods, call them here
         // e.g. ball.update(); paddle.update();
-
+        ball.update(2.0, paddle); // di chuyển bóng nếu đã launch
+        paddle.update(4.0); // giả sử dt = 4.0 ms cho paddle (nếu cần)
         checkCollisionWithWalls();
         checkCollisionWithPaddle();
         checkCollisionWithBricks();

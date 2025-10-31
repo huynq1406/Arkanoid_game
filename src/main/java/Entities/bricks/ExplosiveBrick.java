@@ -2,7 +2,8 @@ package Entities.bricks;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.awt.*;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 
 public class ExplosiveBrick extends AbstractBrick {
 
@@ -58,12 +59,12 @@ public class ExplosiveBrick extends AbstractBrick {
     }
 
     @Override
-    public void render(Graphics g) {
+    public void render(GraphicsContext g) {
         if(destroyed) return;
-        g.setColor(getBrickColor());
+        g.setFill(getBrickColor());
         g.fillRect(x, y, width, height);
 
-        g.setColor(Color.BLACK);
-        g.drawRect(x, y, width, height);
+        g.setStroke(Color.BLACK);
+        g.strokeRect(x, y, width, height);
     }
 }

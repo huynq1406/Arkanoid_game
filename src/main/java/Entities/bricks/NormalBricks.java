@@ -1,6 +1,8 @@
 package Entities.bricks;
 
-import java.awt.*;
+import java.util.List;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 
 public class NormalBricks extends AbstractBrick {
 
@@ -18,17 +20,17 @@ public class NormalBricks extends AbstractBrick {
     }
 
     protected Color getBrickColor() {
-        return new Color(255, 160, 122);
+        return Color.web("#ffA07A");
     }
 
     @Override
-    public void render(Graphics g) {
+    public void render(GraphicsContext g) {
         if (destroyed) return;
-        g.setColor(getBrickColor());
+        g.setFill(getBrickColor());
         g.fillRect(x,y,width,height);
 
-        g.setColor(Color.black);
-        g.drawRect(x,y,width,height);
+        g.setStroke(Color.BLACK);
+        g.strokeRect(x,y,width,height);
     }
 }
 

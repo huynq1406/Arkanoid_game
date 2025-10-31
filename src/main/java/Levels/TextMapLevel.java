@@ -5,9 +5,10 @@ import java.util.List;
 
 import Entities.BrickFactory;
 import Entities.bricks.AbstractBrick;
+import javafx.scene.canvas.GraphicsContext;
 
 
-public class TextMapLevel extends Level {
+public class TextMapLevel extends BaseLevel {
 
     private final String resourcePath; // ví dụ "levels/Map.txt"
     private final int levelIndex;      // ví dụ 1
@@ -22,13 +23,14 @@ public class TextMapLevel extends Level {
     private float ballSpeed = 5.0f;
     private int paddleWidth = 100;
 
-    public TextMapLevel(String resourcePath, int levelIndex) {
-        this.resourcePath = resourcePath;
+    public TextMapLevel(String resourcePath, int levelIndex, GraphicsContext gc) {
+        super(gc, 0);
+        this.resourcePath = resourcePath; // THÊM /
         this.levelIndex   = levelIndex;
     }
 
     public void buildFromMap(int panelWidth) {
-        List<String> rows = LevelLoader.load("levels/Map.txt", levelIndex);
+        List<String> rows = LevelLoader.load(resourcePath, levelIndex);
 
         // 2) Tính kích thước gạch (auto-fit theo panel)
         int cols = rows.stream().mapToInt(String::length).max().orElse(0);

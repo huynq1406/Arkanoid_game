@@ -19,11 +19,24 @@ public class GamePanel extends Pane {
 
     private Ball ball;
     private Paddle paddle;
+    private GameManager gameManager;
     private List<AbstractBrick> bricks = new ArrayList<>();
 
     public GamePanel() {
         setPrefSize(WIDTH, HEIGHT);
         getChildren().add(canvas);
+        canvas.setOnMouseMoved(e -> {
+            if (gameManager != null) {
+                gameManager.onMouseMove(e.getX());
+            }
+        });
+
+        canvas.setOnMousePressed(e -> {
+            if (gameManager != null) {
+                gameManager.onMousePress();
+            }
+        });
+
     }
 
     public void setRefs(Ball ball, Paddle paddle, List<AbstractBrick> bricks) {

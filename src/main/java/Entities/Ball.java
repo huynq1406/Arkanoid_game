@@ -1,8 +1,8 @@
 package Entities;
 
-import java.awt.*;
-import ObjectManager.*;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import ObjectManager.MovableObject;
 
 public class Ball extends MovableObject {
     private final int radius;
@@ -82,8 +82,8 @@ public class Ball extends MovableObject {
     public void bounceY() { setDirection(dirX, -dirY); }
 
     @Override
-    public void render(Graphics g) {
-        g.setColor(Color.WHITE);
+    public void render(GraphicsContext g) {
+        g.setFill(Color.WHITE);
         g.fillOval(x, y, width, height);
     }
 
