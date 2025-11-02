@@ -1,6 +1,8 @@
 package Entities.bricks;
 
-import java.awt.*;
+import java.util.List;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 
 public class StrongBricks extends AbstractBrick {
 
@@ -21,24 +23,24 @@ public class StrongBricks extends AbstractBrick {
     protected Color getBrickColor() {
         switch (hitPoints) {
             case 3:
-                return new Color(139, 0, 0); // đỏ đậm
+                return Color.DARKRED; // đỏ đậm
             case 2:
-                return new Color(205, 92, 92); // đỏ nhạt
+                return Color.RED; // đỏ nhạt
             case 1:
-                return new Color(255, 160, 122); // hồng nhạt
+                return Color.LIGHTPINK; // hồng nhạt
             default:
                 return Color.GRAY; // đã vỡ
         }
     }
 
     @Override
-    public void render(Graphics g) {
+    public void render(GraphicsContext g) {
         if (destroyed) return;
-        g.setColor(getBrickColor());
+        g.setFill(getBrickColor());
         g.fillRect(x,y,width,height);
 
-        g.setColor(Color.BLACK);
-        g.drawRect(x,y,width,height);
+        g.setStroke(Color.BLACK);
+        g.strokeRect(x,y,width,height);
     }
 }
 

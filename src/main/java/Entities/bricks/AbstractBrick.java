@@ -1,9 +1,10 @@
 package Entities.bricks;
 
-import ObjectManager.GameObject;
 import java.util.List;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import ObjectManager.GameObject;
 
-import java.awt.*;
 
 public abstract class AbstractBrick extends GameObject {
     protected int hitPoints;
@@ -31,7 +32,7 @@ public abstract class AbstractBrick extends GameObject {
     protected abstract Color getBrickColor();
 
     @Override
-    public abstract void render(Graphics g);
+    public abstract void render(GraphicsContext g);
 
 }
 

@@ -1,25 +1,15 @@
 package Entities;
 
-import java.awt.Color;
-import java.awt.Graphics;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import ObjectManager.MovableObject;
-import Entities.PowerUp.*;
 
 public class Paddle extends MovableObject {
-    protected BigPaddlePW bp = new BigPaddlePW(21,23, this);
 
     public Paddle(int x, int y, int width, int height) {
-        super(x,y,width,height);
+        super(x, y, width, height);
         this.dx = 0;
         this.dy = 0;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    public int getWidth() {
-        return width;
     }
 
     public void setCenterX(int mouseX) {
@@ -32,19 +22,16 @@ public class Paddle extends MovableObject {
     }
 
     @Override
-    public void update(double dt){
+    public void update(double dt) {}
 
-    }
+    public void render(GraphicsContext g) {
+        g.setFill(Color.web("#28aaff"));
+        g.fillRoundRect(x, y, width, height, 12, 12);
 
-    @Override
-    public void render(Graphics g) {
-        g.setColor(new Color(40,170,255));
-        g.fillRoundRect(x,y,width,height,12,12);
+        g.setStroke(Color.web("#145078"));
+        g.strokeRoundRect(x, y, width, height, 12, 12);
 
-        g.setColor(new Color(20, 80, 120));
-        g.drawRoundRect(x, y, width, height, 12, 12);
-
-        g.setColor(new Color(255, 255, 255, 40));
-        g.fillRect(x + width/2 - 2, y + 3, 4, height - 6);
+        g.setFill(Color.rgb(255, 255, 255, 0.2));
+        g.fillRect(x + width / 2.0 - 2, y + 3, 4, height - 6);
     }
 }

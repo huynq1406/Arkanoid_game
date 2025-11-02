@@ -58,7 +58,7 @@ public class MainMenuPane extends StackPane {
             getChildren().addAll(mediaView, vbox);
         } else {
             getChildren().add(vbox);
-            setStyle("-fx-menu-error");
+            setStyle("-fx-background-color: #505064; -fx-text-fill: white; -fx-background-radius: 6; -fx-focus-color: transparent;");
         }
     }
 
