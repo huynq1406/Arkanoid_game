@@ -45,6 +45,10 @@ public class GamePanel extends Pane {
         this.bricks = (bricks == null) ? new ArrayList<>() : bricks;
     }
 
+    public void setGameManager(GameManager gm) {
+        this.gameManager = gm;
+    }
+
     /** Return canvas GraphicsContext so GameManager can draw HUD/overlays */
     public GraphicsContext getGraphicsContext() {
         return canvas.getGraphicsContext2D();
@@ -60,11 +64,13 @@ public class GamePanel extends Pane {
 
         // bricks
         if (bricks != null) {
-            for (AbstractBrick b : bricks) drawBrick(g, b);
+            for (AbstractBrick b : bricks) {
+                b.render(g);
+            }
         }
 
         // paddle & ball (nếu class của bạn có draw(g), hãy gọi trực tiếp)
-        if (paddle != null) drawPaddle(g, paddle);
+        if (paddle != null) paddle.render(g);
         if (ball   != null) {
             // keep existing API: ball.drawBall(g, ball) or adapt to ball.draw(g)
             try {
@@ -77,17 +83,17 @@ public class GamePanel extends Pane {
         }
     }
 
-    private void drawBrick(GraphicsContext g, AbstractBrick b) {
-        // TODO: nếu Brick có sprite/skin riêng, thay bằng b.draw(g)
-        g.setFill(b.isDestroyed() ? Color.web("#3C3C3C") : Color.web("#4FC3F7"));
-        g.fillRect(b.getX(), b.getY(), b.getWidth(), b.getHeight());
-        g.setStroke(Color.DARKGRAY);
-        g.strokeRect(b.getX(), b.getY(), b.getWidth(), b.getHeight());
-    }
+//    private void drawBrick(GraphicsContext g, AbstractBrick b) {
+//        // TODO: nếu Brick có sprite/skin riêng, thay bằng b.draw(g)
+//        g.setFill(b.isDestroyed() ? Color.web("#3C3C3C") : Color.web("#4FC3F7"));
+//        g.fillRect(b.getX(), b.getY(), b.getWidth(), b.getHeight());
+//        g.setStroke(Color.DARKGRAY);
+//        g.strokeRect(b.getX(), b.getY(), b.getWidth(), b.getHeight());
+//    }
 
-    private void drawPaddle(GraphicsContext g, Paddle p) {
-        // TODO: nếu Paddle đã có draw(g), gọi p.draw(g);
-        g.setFill(Color.web("#FFEE58"));
-        g.fillRoundRect(p.getX(), p.getY(), p.getWidth(), p.getHeight(), 10, 10);
-    }
+//    private void drawPaddle(GraphicsContext g, Paddle p) {
+//        // TODO: nếu Paddle đã có draw(g), gọi p.draw(g);
+//        g.setFill(Color.web("#FFEE58"));
+//        g.fillRoundRect(p.getX(), p.getY(), p.getWidth(), p.getHeight(), 10, 10);
+//    }
 }

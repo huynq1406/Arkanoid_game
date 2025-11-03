@@ -69,7 +69,18 @@ public class GameManager {
     public void start() {
         if (loop != null) loop.stop();
         loop = new AnimationTimer() {
-            @Override public void handle(long now) { tick(); }
+            private long lastTime = 0;
+
+            @Override
+            public void handle(long now) {
+                if (lastTime == 0) {
+                    lastTime = now;
+                    return;
+                }
+                double dt = (now - lastTime) / 1_000_000_000.0; // giây
+                lastTime = now;
+                tick(dt);
+            }
         };
         loop.start();
     }
@@ -86,11 +97,11 @@ public class GameManager {
     }
 
 
-    private void tick() {
+    private void tick(double dt) {
         // If Ball/Paddle have update() methods, call them here
         // e.g. ball.update(); paddle.update();
-        ball.update(2.0, paddle); // di chuyển bóng nếu đã launch
-        paddle.update(4.0); // giả sử dt = 4.0 ms cho paddle (nếu cần)
+        ball.update(dt, paddle);
+        paddle.update(dt);// giả sử dt = 4.0 ms cho paddle (nếu cần)
         checkCollisionWithWalls();
         checkCollisionWithPaddle();
         checkCollisionWithBricks();

@@ -7,6 +7,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
+import Entities.Ball;
+import Entities.Paddle;
 
 public class Main extends Application {
     private Stage primaryStage;
@@ -14,6 +16,8 @@ public class Main extends Application {
     private MainMenuPane menuPane;
     private GameManager gameManager;
     private GamePanel gamePanel;
+    private Ball ball = new Ball(400, 300, 10);
+    private Paddle paddle = new Paddle(350, 550, 100, 20);
 
     @Override
     public void start(Stage primaryStage) {
@@ -28,7 +32,6 @@ public class Main extends Application {
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
-
     }
 
     private void startGame() {
@@ -45,7 +48,8 @@ public class Main extends Application {
                 new Entities.Ball(400, 300, 10),
                 new Entities.Paddle(350, 550, 100, 20)
         );
-
+        gameManager = new GameManager(GamePanel.WIDTH, GamePanel.HEIGHT, gamePanel, ball, paddle);
+        gamePanel.setGameManager(gameManager);
         gameManager.buildLevel();
         gameManager.start();
     }
