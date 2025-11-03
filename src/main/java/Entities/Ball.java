@@ -28,8 +28,8 @@ public class Ball extends MovableObject {
         if (len < 1e-6) return;
         dirX = newDirX / len;
         dirY = newDirY / len;
-        this.dx = 1.5f * speed * dirX;
-        this.dy = 1.5f * speed * dirY;
+        this.dx = 1.5 * speed * dirX;
+        this.dy = 1.5 * speed * dirY;
     }
 
     public double getDirX() { return dirX; }
@@ -56,7 +56,7 @@ public class Ball extends MovableObject {
     public void update(double dt, Paddle paddle) {
         if (!launched) {
             this.x = paddle.getX() + paddle.getWidth()/2 - radius;
-            this.y = paddle.getY() - 1 - radius*2;
+            this.y = paddle.getY() - 1 - radius * 2;
             return;
         }
         update(dt);

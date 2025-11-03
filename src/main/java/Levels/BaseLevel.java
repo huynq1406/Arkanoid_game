@@ -7,15 +7,15 @@ import Entities.bricks.*;
 import Entities.Ball;
 import Entities.Paddle;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
-import javafx.scene.canvas.Canvas;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.io.IOException;
 
 public class BaseLevel {
     private List<AbstractBrick> bricks;
     private List<IPowerUp> powerUps;
     private Ball ball;
     private Paddle paddle;
-    private Canvas canvas = new Canvas(400, 300);
 
     public BaseLevel(){}
     public BaseLevel(GraphicsContext gc, int levelNum) {
@@ -27,18 +27,12 @@ public class BaseLevel {
     }
 
     public void loadBricks(int levelNum) {
-//        for (int row = 0; row < 3; row++) {
-//            for (int col = 0; col < 5; col++) {
-//                int x = 60 + row * 60; // int x = startX + col * (brickWidth + hSpacing);
-//                int y = 60 + col * 30; // int y = startY + row * (brickHeight + vSpacing);
-//                NormalBricks brick = new NormalBricks(x, y, 20, 30);
-//                bricks.add(brick);
-//            }
-//        }
         if (bricks == null) {
             bricks = new ArrayList<>();
         }
         bricks.clear();
+        try {
+        List<String> mapLines = Files.readAllLines(Path.of("res/levels/map" + levelNum + ".txt"));
         int rows = 3, cols = 5;
         int brickW = 60, brickH = 30;
         int startX = 100, startY = 80;
@@ -49,6 +43,10 @@ public class BaseLevel {
                 int y = startY + r * (brickH + vGap);
                 bricks.add(new NormalBricks(x, y, brickW, brickH));
                 }
+            }
+        } catch (IOException e) {
+            System.err.println("Không thể tải map cấp " + levelNum + ": " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -59,8 +57,7 @@ public class BaseLevel {
         powerUps.forEach(IPowerUp::update);
     }
 
-    public void render() {
-        GraphicsContext g = canvas.getGraphicsContext2D();
+    public void render(GraphicsContext g) {
         bricks.forEach(b -> b.render(g));
         ball.render(g);
         paddle.render(g);
