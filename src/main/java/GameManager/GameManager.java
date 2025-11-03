@@ -129,6 +129,17 @@ public class GameManager {
         return new BoundingBox(br.getX(), br.getY(), br.getWidth(), br.getHeight());
     }
 
+    private void adjustBallPosition(Bounds bBall, Bounds bBrick, CollisionSide side) {
+        double epsilon = 1.0;  // Khoảng cách nhỏ để push out
+        switch (side) {
+            case LEFT:   ball.setX((int)(ball.getX() - ((bBall.getMaxX() - bBrick.getMinX()) - epsilon))); break;
+            case RIGHT:  ball.setX((int)(ball.getX() + (bBrick.getMaxX() - bBall.getMinX()) + epsilon)); break;
+            case TOP:    ball.setY((int)(ball.getY() - (bBall.getMaxY() - bBrick.getMinY()) - epsilon)); break;
+            case BOTTOM: ball.setY((int)(ball.getY() + (bBrick.getMaxY() - bBall.getMinY()) + epsilon)); break;
+            default: break;
+        }
+    }
+
     private CollisionSide checkCollision(Bounds a, Bounds b) {
         if (!a.intersects(b)) return CollisionSide.NONE;
 
@@ -142,6 +153,17 @@ public class GameManager {
 
         double minHoriz = Math.min(overlapLeft, overlapRight);
         double minVert  = Math.min(overlapTop, overlapBottom);
+
+        double threshold = 1.0;  // Nếu gần bằng, coi như góc
+        if (Math.abs(minHoriz - minVert) < threshold) {
+            // Góc: Trả về side dựa trên velocity (hướng bóng đang đi)
+            if (ball.getDx() != 0 && ball.getDy() != 0) {
+                // Có thể xử lý cả horiz và vert ở loop ngoài
+                return (Math.abs(ball.getDx()) > Math.abs(ball.getDy())) ?
+                        (overlapLeft < overlapRight ? CollisionSide.LEFT : CollisionSide.RIGHT) :
+                        (overlapTop < overlapBottom ? CollisionSide.TOP : CollisionSide.BOTTOM);
+            }
+        }
 
         if (minHoriz < minVert) {
             return (overlapLeft < overlapRight) ? CollisionSide.LEFT : CollisionSide.RIGHT;
@@ -174,6 +196,9 @@ public class GameManager {
 
     private void checkCollisionWithBricks() {
         Bounds bBall = boundsFrom(ball);
+        boolean reflectedHoriz = false;
+        boolean reflectedVert = false;
+
         for (AbstractBrick brick : bricks) {
             if (brick.isDestroyed()) {
                 if (Math.random() < 0.99) {
@@ -184,15 +209,21 @@ public class GameManager {
             CollisionSide side = checkCollision(bBall, boundsFrom(brick));
             if (side == CollisionSide.NONE) continue;
 
-            switch (side) {
-                case LEFT:  reflectBall(-1, 0); break;
-                case RIGHT: reflectBall( 1, 0); break;
-                case TOP:   reflectBall( 0,-1); break;
-                case BOTTOM:reflectBall( 0, 1); break;
-                default: break;
-            }
+            // Collect sides để reflect sau (tránh flip nhiều lần)
+            if (side == CollisionSide.LEFT || side == CollisionSide.RIGHT) reflectedHoriz = true;
+            if (side == CollisionSide.TOP || side == CollisionSide.BOTTOM) reflectedVert = true;
+            // Adjust vị trí bóng ra khỏi brick để tránh kẹt
+            adjustBallPosition(bBall, boundsFrom(brick), side);
 
             boolean destroyedNow = brick.takeHit(bricks);
+//            switch (side) {
+//                case LEFT:  reflectBall(-1, 0); break;
+//                case RIGHT: reflectBall( 1, 0); break;
+//                case TOP:   reflectBall( 0,-1); break;
+//                case BOTTOM:reflectBall( 0, 1); break;
+//                default: break;
+//            }
+
             if (destroyedNow) {
                 // spawn explosion effect at brick's position
                 effects.add(new ExplosionEffect(brick.getX(), brick.getY(), 30, explosionImage));
@@ -205,6 +236,9 @@ public class GameManager {
                 ((ExplosiveBrick)brick).takeHit(bricks);
             }
         }
+        // Apply reflect chỉ 1 lần sau loop
+        if (reflectedHoriz) reflectBall(ball.getDx() > 0 ? -1 : 1, 0);  // Flip x dựa trên dir hiện tại
+        if (reflectedVert) reflectBall(0, ball.getDy() > 0 ? -1 : 1);   // Flip y
     }
 
     private void removeDestroyedBricks() {
