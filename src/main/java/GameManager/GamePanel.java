@@ -74,7 +74,7 @@ public class GamePanel extends Pane {
         if (ball   != null) {
             // keep existing API: ball.drawBall(g, ball) or adapt to ball.draw(g)
             try {
-                ball.drawBall(g, ball);
+                ball.render(g, ball);
             } catch (Throwable t) {
                 // fallback basic draw using position/size if drawBall not present
                 g.setFill(Color.WHITE);
@@ -82,18 +82,4 @@ public class GamePanel extends Pane {
             }
         }
     }
-
-//    private void drawBrick(GraphicsContext g, AbstractBrick b) {
-//        // TODO: nếu Brick có sprite/skin riêng, thay bằng b.draw(g)
-//        g.setFill(b.isDestroyed() ? Color.web("#3C3C3C") : Color.web("#4FC3F7"));
-//        g.fillRect(b.getX(), b.getY(), b.getWidth(), b.getHeight());
-//        g.setStroke(Color.DARKGRAY);
-//        g.strokeRect(b.getX(), b.getY(), b.getWidth(), b.getHeight());
-//    }
-
-//    private void drawPaddle(GraphicsContext g, Paddle p) {
-//        // TODO: nếu Paddle đã có draw(g), gọi p.draw(g);
-//        g.setFill(Color.web("#FFEE58"));
-//        g.fillRoundRect(p.getX(), p.getY(), p.getWidth(), p.getHeight(), 10, 10);
-//    }
 }

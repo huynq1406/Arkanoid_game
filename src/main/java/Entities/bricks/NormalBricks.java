@@ -20,7 +20,7 @@ public class NormalBricks extends AbstractBrick {
     }
 
     protected Color getBrickColor() {
-        return Color.web("#ffA07A");
+        return Color.CORNFLOWERBLUE;
     }
 
     @Override
