@@ -81,15 +81,8 @@ public class Ball extends MovableObject {
 
     public void bounceY() { setDirection(dirX, -dirY); }
 
-    @Override
-    public void render(GraphicsContext g) {
+    public void render(GraphicsContext g, Ball b) {
         g.setFill(Color.WHITE);
-        g.fillOval(x, y, width, height);
-    }
-
-    public void drawBall(GraphicsContext g, Ball b) {
-        // TODO: nếu Ball đã có draw(g), gọi b.draw(g);
-        g.setFill(javafx.scene.paint.Color.web("#FF7043"));
         int d = b.getDiameter();
         g.fillOval(b.getX(), b.getY(), d, d);
     }

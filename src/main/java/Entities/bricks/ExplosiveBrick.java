@@ -55,7 +55,7 @@ public class ExplosiveBrick extends AbstractBrick {
 
     @Override
     public Color getBrickColor() {
-        return Color.RED;
+        return Color.INDIANRED;
     }
 
     @Override

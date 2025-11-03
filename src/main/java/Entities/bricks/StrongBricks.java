@@ -23,11 +23,11 @@ public class StrongBricks extends AbstractBrick {
     protected Color getBrickColor() {
         switch (hitPoints) {
             case 3:
-                return Color.DARKRED; // đỏ đậm
+                return Color.DARKSLATEBLUE; // đỏ đậm
             case 2:
-                return Color.RED; // đỏ nhạt
+                return Color.CADETBLUE; // đỏ nhạt
             case 1:
-                return Color.LIGHTPINK; // hồng nhạt
+                return Color.CORNFLOWERBLUE; // hồng nhạt
             default:
                 return Color.GRAY; // đã vỡ
         }

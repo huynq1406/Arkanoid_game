@@ -1,9 +1,16 @@
-1 
+// Level 1
+LEVEL 1
+NAME First Steps
+AUTHOR GameDev
+WIDTH 10
+HEIGHT 6
+MAP
+1
 1111111111
 1133xx3311
 13x    x31
 133S  333S
 111    111
-ssss  3x1x
+1x3x  3x1x
 BREAK
 
