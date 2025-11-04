@@ -44,12 +44,12 @@ public class Main extends Application {
         this.gameManager = new GameManager(
                 GamePanel.WIDTH,
                 GamePanel.HEIGHT,
-                ball,
                 gamePanel,
+                ball,
                 new Entities.Ball(400, 300, 10),
                 new Entities.Paddle(350, 550, 100, 20)
         );
-        gameManager = new GameManager(GamePanel.WIDTH, GamePanel.HEIGHT, ball,  gamePanel, ball, paddle);
+        gameManager = new GameManager(GamePanel.WIDTH, GamePanel.HEIGHT, gamePanel, ball, ball, paddle);
         gamePanel.setGameManager(gameManager);
         gameManager.buildLevel();
         gameManager.start();

@@ -18,20 +18,19 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
+import java.util.Arrays;
 
 public class GameManager {
     private final int width;
     private final int height;
-
     private final GamePanel panel;
-    private List<AbstractBrick> bricks = new ArrayList<>();
     private final Ball ball;
     private final Paddle paddle;
-    private BallManager ballManager = new BallManager();
-    private PowerUpManager powerUpManager = new PowerUpManager();  // ← ĐÃ CÓ
-    private int levelIndex = 1;
 
+    private BallManager ballManager = new BallManager();
+    private PowerUpManager powerUpManager = new PowerUpManager();
+    private List<AbstractBrick> bricks = new ArrayList<>();
+    private List<PowerUp> powerUps = new ArrayList<>();
 
     private TextMapLevel currentLevel;
     private AnimationTimer loop;
@@ -39,19 +38,20 @@ public class GameManager {
     private int score = 0;
     private int lives = 3;
     private boolean gameOver = false;
+    private int levelIndex = 1;
 
     private Image explosionImage;
     private final List<ExplosionEffect> effects = new ArrayList<>();
 
     private enum CollisionSide { NONE, LEFT, RIGHT, TOP, BOTTOM }
 
-    public GameManager(int width, int height, Ball initialBall, GamePanel panel, Ball ball, Paddle paddle) {
+    public GameManager(int width, int height, GamePanel panel, Ball initialBall, Ball ball, Paddle paddle) {
         this.width = width;
         this.height = height;
         this.panel  = panel;
         this.ball   = ball;
         this.paddle = paddle;
-        ballManager.addBall(initialBall);
+//        ballManager.addBall(initialBall);
 
         // try to load explosion image from resources (/images/explosion.png)
         InputStream is = getClass().getResourceAsStream("/images/explosion.png");
@@ -69,10 +69,9 @@ public class GameManager {
     public void buildLevel() {
         GraphicsContext gc = panel.getGraphicsContext();
         currentLevel = new TextMapLevel("levels/Map.txt", levelIndex, gc);
-        currentLevel.buildFromMap(GamePanel.WIDTH);
         try {
             currentLevel.buildFromMap(GamePanel.WIDTH);
-            bricks = currentLevel.getBricks();
+            bricks = new ArrayList<>(currentLevel.getBricks());
             panel.setRefs(ball, paddle, bricks);
             ball.resetToPaddle(paddle);  // Reset ball khi bắt đầu level mới
             System.out.println("Loaded level " + levelIndex);
@@ -110,20 +109,26 @@ public class GameManager {
     }
 
     public void onMousePress() {
-        if (!ball.isLaunched()) {
-            ball.launch();
-        }
+            if (!ball.isLaunched()) {
+                ball.launch();
+            }
     }
 
 
     private void tick(double dt) {
         // If Ball/Paddle have update() methods, call them here
         // e.g. ball.update(); paddle.update();
+        if (gameOver) return;
+
         ball.update(dt, paddle);
-        paddle.update(dt);// giả sử dt = 4.0 ms cho paddle (nếu cần)
+        paddle.update(dt);
+        powerUpManager.updateAll();
+
+        checkLoseLife();
         checkCollisionWithWalls();
         checkCollisionWithPaddle();
         checkCollisionWithBricks();
+        checkCollisionWithPowerUps();
         removeDestroyedBricks();
 
         // Kiểm tra hoàn thành level SAU removeDestroyedBricks()
@@ -133,6 +138,7 @@ public class GameManager {
 
         // render game objects via JavaFX canvas
         panel.render();
+        powerUpManager.renderAll(panel.getGraphicsContext());
 
         // update and render transient effects (explosions, etc.)
         updateAndRenderEffects();
@@ -231,9 +237,6 @@ public class GameManager {
 
         for (AbstractBrick brick : bricks) {
             if (brick.isDestroyed()) {
-                if (Math.random() < 0.99) {
-                    powerUps.add(new Entities.PowerUp.BigPaddlePW(brick.getX(), brick.getY(),paddle));
-                }
                 continue;
             }
             CollisionSide side = checkCollision(bBall, boundsFrom(brick));
@@ -258,6 +261,24 @@ public class GameManager {
                 // spawn explosion effect at brick's position
                 effects.add(new ExplosionEffect(brick.getX(), brick.getY(), 30, explosionImage));
 
+                // Thêm xác suất rơi power-up khi gạch bị phá
+                double rand = Math.random();
+                if (rand < 1 ) {
+                    PowerUp powerUp;
+                    double powerupRand = Math.random();
+
+                    if (powerupRand < 0.4) {
+                        powerUp = new BigPaddlePW(brick.getX(), brick.getY(), paddle);
+                    } else if (powerupRand < 0.7) {
+                        powerUp = new IncreaseBallSpeed(brick.getX(), brick.getY(), ball);
+                    } else if (powerupRand < 0.9) {
+                        powerUp = new ExtraLifePowerUp(brick.getX(), brick.getY());
+                    } else {
+                        powerUp = new MultiBallPowerUp(brick.getX(), brick.getY(), Arrays.asList(ball));
+                    }
+                    powerUpManager.addPowerUp(powerUp);
+                }
+
                 score += (brick instanceof StrongBricks) ? 150 : 50;
                 score += (brick instanceof NormalBricks) ? 100 : 0;
                 double newSpeed = Math.min(420, ball.getSpeed() * 1.02);
@@ -268,7 +289,21 @@ public class GameManager {
         }
         // Apply reflect chỉ 1 lần sau loop
         if (reflectedHoriz) reflectBall(ball.getDx() > 0 ? -1 : 1, 0);  // Flip x dựa trên dir hiện tại
-        if (reflectedVert) reflectBall(0, ball.getDy() > 0 ? -1 : 1);   // Flip y
+        if (reflectedVert) reflectBall(0, ball.getDy() > 0 ? -1 : 1);// Flip y
+    }
+
+    private void checkCollisionWithPowerUps() {
+        Bounds bPaddle = boundsFrom(paddle);
+        Iterator<PowerUp> it = powerUpManager.getPowerUps().iterator();
+        while (it.hasNext()) {
+            PowerUp p = it.next();
+            if (bPaddle.intersects(p.getX(), p.getY(), p.getWidth(), p.getHeight())) {
+                if (p instanceof IPowerUp) {
+                    ((IPowerUp)p).activate();
+                }
+                it.remove();
+            }
+        }
     }
 
     private void removeDestroyedBricks() {
@@ -301,6 +336,22 @@ public class GameManager {
             ball.resetToPaddle(paddle);
         }
         // add more HUD drawing here (lives, level, etc.)
+    }
+
+    private void checkLoseLife() {
+        boolean lost = ballManager.getBalls().stream()
+                .anyMatch(b -> b.getY() > height);
+
+        if (lost) {
+            loseLife();
+            resetBallsToPaddle();
+        }
+    }
+
+    private void resetBallsToPaddle() {
+        for (Ball b : ballManager.getBalls()) {
+            b.resetToPaddle(paddle);
+        }
     }
 
     private void loseLife() {
