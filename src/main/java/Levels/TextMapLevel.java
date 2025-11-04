@@ -24,7 +24,7 @@ public class TextMapLevel extends BaseLevel {
     private int paddleWidth = 100;
 
     public TextMapLevel(String resourcePath, int levelIndex, GraphicsContext gc) {
-        super(gc, 0);
+        super(gc, 1);
         this.resourcePath = resourcePath; // THÊM /
         this.levelIndex   = levelIndex;
     }
