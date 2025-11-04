@@ -1,5 +1,6 @@
 package Levels;
 
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.List;
 import Entities.PowerUp.*;
@@ -9,7 +10,7 @@ import Entities.Paddle;
 import javafx.scene.canvas.GraphicsContext;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.io.IOException;
+import java.io.*;
 
 public class BaseLevel {
     private List<AbstractBrick> bricks;
@@ -32,7 +33,7 @@ public class BaseLevel {
         }
         bricks.clear();
         try {
-        List<String> mapLines = Files.readAllLines(Path.of("res/levels/map" + levelNum + ".txt"));
+        List<String> mapLines = LevelLoader.load("levels/Map.txt", levelNum);
         int rows = 3, cols = 5;
         int brickW = 60, brickH = 30;
         int startX = 100, startY = 80;
@@ -44,7 +45,7 @@ public class BaseLevel {
                 bricks.add(new NormalBricks(x, y, brickW, brickH));
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.err.println("Không thể tải map cấp " + levelNum + ": " + e.getMessage());
             e.printStackTrace();
         }
@@ -65,13 +66,5 @@ public class BaseLevel {
     }
 
     private void checkCollisions() {
-    }
-
-    public boolean isCompleted() {
-        return bricks.stream().allMatch(AbstractBrick::isDestroyed);
-    }
-
-    public boolean isFailed() {
-        return ball.getY() > 600; // rơi khỏi màn hình
     }
 }

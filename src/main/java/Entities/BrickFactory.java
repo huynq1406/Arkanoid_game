@@ -23,6 +23,4 @@ public final class BrickFactory {
                 return null;
         }
     }
-
-
 }

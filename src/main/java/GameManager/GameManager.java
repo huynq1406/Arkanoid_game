@@ -4,12 +4,15 @@ import Entities.Ball;
 import Entities.Paddle;
 import Entities.bricks.*;
 import Levels.TextMapLevel;
+import Entities.PowerUp.*;
+import ObjectManager.BallManager;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Bounds;
 import javafx.geometry.BoundingBox;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -25,24 +28,30 @@ public class GameManager {
     private List<AbstractBrick> bricks = new ArrayList<>();
     private final Ball ball;
     private final Paddle paddle;
-    private List<Entities.PowerUp.PowerUp> powerUps = new ArrayList<>();
+    private BallManager ballManager = new BallManager();
+    private PowerUpManager powerUpManager = new PowerUpManager();  // ← ĐÃ CÓ
+    private int levelIndex = 1;
+
 
     private TextMapLevel currentLevel;
     private AnimationTimer loop;
 
     private int score = 0;
+    private int lives = 3;
+    private boolean gameOver = false;
 
     private Image explosionImage;
     private final List<ExplosionEffect> effects = new ArrayList<>();
 
     private enum CollisionSide { NONE, LEFT, RIGHT, TOP, BOTTOM }
 
-    public GameManager(int width, int height, GamePanel panel, Ball ball, Paddle paddle) {
+    public GameManager(int width, int height, Ball initialBall, GamePanel panel, Ball ball, Paddle paddle) {
         this.width = width;
         this.height = height;
         this.panel  = panel;
         this.ball   = ball;
         this.paddle = paddle;
+        ballManager.addBall(initialBall);
 
         // try to load explosion image from resources (/images/explosion.png)
         InputStream is = getClass().getResourceAsStream("/images/explosion.png");
@@ -59,11 +68,21 @@ public class GameManager {
 
     public void buildLevel() {
         GraphicsContext gc = panel.getGraphicsContext();
-        currentLevel = new TextMapLevel("levels/Map.txt", 1, gc);
+        currentLevel = new TextMapLevel("levels/Map.txt", levelIndex, gc);
         currentLevel.buildFromMap(GamePanel.WIDTH);
-
-        bricks = currentLevel.getBricks();
-        panel.setRefs(ball, paddle, bricks);
+        try {
+            currentLevel.buildFromMap(GamePanel.WIDTH);
+            bricks = currentLevel.getBricks();
+            panel.setRefs(ball, paddle, bricks);
+            ball.resetToPaddle(paddle);  // Reset ball khi bắt đầu level mới
+            System.out.println("Loaded level " + levelIndex);
+        } catch (IllegalArgumentException e) {
+            // Xử lý nếu không tìm thấy level (hết level)
+            gameOver = true;
+            loop.stop();
+            panel.showGameOver();  // Hoặc hiển thị "You Win!" nếu muốn
+            System.out.println("No more levels: " + e.getMessage());
+        }
     }
 
     public void start() {
@@ -107,6 +126,11 @@ public class GameManager {
         checkCollisionWithBricks();
         removeDestroyedBricks();
 
+        // Kiểm tra hoàn thành level SAU removeDestroyedBricks()
+        if (bricks.isEmpty() && !gameOver) {
+            nextLevel();
+        }
+
         // render game objects via JavaFX canvas
         panel.render();
 
@@ -115,6 +139,12 @@ public class GameManager {
 
         // draw HUD (score, lives) on same canvas
         drawHUD();
+    }
+
+    private void nextLevel() {
+        levelIndex++;
+        buildLevel();
+        score += 1000;  // Bonus điểm khi hoàn thành level (tùy chỉnh)
     }
 
     /* --- Collision helpers using JavaFX Bounds built from existing getters --- */
@@ -263,7 +293,27 @@ public class GameManager {
         // draw simple score text on top-left (overlay)
         g.setFill(Color.WHITE);
         g.fillText("Score: " + score, 10, 20);
+        g.fillText("Lives: " + lives, 10, 50);
+        g.setFont(Font.font("Times New Roman", 20));
+        g.fillText("Level: " + levelIndex, 370, 20);
+        if (ball.getY() > height) {
+            loseLife();
+            ball.resetToPaddle(paddle);
+        }
         // add more HUD drawing here (lives, level, etc.)
+    }
+
+    private void loseLife() {
+        lives--;
+        if (lives > 0) {
+            ball.resetToPaddle(paddle);
+            System.out.println("Bạn còn " + lives + " mạng.");
+        } else {
+            gameOver = true;
+            loop.stop(); // Dừng vòng lặp
+            panel.showGameOver();
+            // Nếu bạn có giao diện GameOver thì gọi panel.showGameOver();
+        }
     }
 
     private void updateAndRenderEffects() {
