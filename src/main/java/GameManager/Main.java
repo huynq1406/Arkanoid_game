@@ -1,63 +1,85 @@
 package GameManager;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.stage.Stage;
+import Entities.Ball;
+import Entities.Paddle;
 
-public class Main {
-    private static JFrame frame;
-    private static GamePanel gamePanel;
-    private static MainMenuPanel mainMenuPanel;
+public class Main extends Application {
+    private Stage primaryStage;
+    private Scene scene;
+    private MainMenuPane menuPane;
+    private GameManager gameManager;
+    private GamePanel gamePanel;
+    private Ball ball = new Ball(400, 300, 10);
+    private Paddle paddle = new Paddle(350, 550, 100, 20);
+
+    @Override
+    public void start(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+        menuPane = new MainMenuPane(
+                (ActionEvent e) -> startGame(),
+                (ActionEvent e) -> showHighScore(),
+                (ActionEvent e) -> quitGame()
+        );
+        scene = new Scene(menuPane, GamePanel.WIDTH, GamePanel.HEIGHT);
+        primaryStage.setTitle("Arkanoid Game");
+        primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
+        primaryStage.show();
+    }
+
+    private void startGame() {
+        if (gamePanel == null) {
+            gamePanel = new GamePanel();
+        }
+        scene.setRoot(gamePanel);
+        gamePanel.requestFocus();
+
+        this.gameManager = new GameManager(
+                GamePanel.WIDTH,
+                GamePanel.HEIGHT,
+                gamePanel,
+                ball,
+                new Entities.Ball(400, 300, 10),
+                new Entities.Paddle(350, 550, 100, 20)
+        );
+        gameManager = new GameManager(GamePanel.WIDTH, GamePanel.HEIGHT, gamePanel, ball, ball, paddle);
+        gamePanel.setGameManager(gameManager);
+        gameManager.buildLevel();
+        gameManager.start();
+    }
+
+    private void showSettings() {
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.initOwner(primaryStage);
+        alert.setTitle("Settings");
+        alert.setHeaderText(null);
+        alert.setContentText("Settings will be added soon!");
+        alert.showAndWait();
+    }
+
+    private void showHighScore() {
+        Alert alert = new Alert(AlertType.INFORMATION);
+        alert.initOwner(primaryStage);
+        alert.setTitle("High Score");
+        alert.setHeaderText(null);
+        alert.setContentText("High Scores will be added soon!");
+        alert.showAndWait();
+    }
+
+    private void quitGame() {
+        Platform.exit();
+    }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            frame = new JFrame("Arkanoid Game");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setResizable(false);
-
-            // Tạo các panel ngay từ đầu
-            gamePanel = new GamePanel();
-
-            // Tạo MainMenuPanel và truyền vào các hành động (action)
-            mainMenuPanel = new MainMenuPanel(
-                e -> showGame(),          // Hành động cho nút Play
-                e -> showHighScores(),    // Hành động cho nút High Score
-                e -> System.exit(0)  // Hành động cho nút Quit
-            );
-            
-            // Bắt đầu bằng việc hiển thị menu
-            showMenu();
-
-            frame.pack();
-            frame.setLocationRelativeTo(null);
-            frame.setVisible(true);
-        });
-    }
-
-    public static void showMenu() {
-        // Dừng game nếu nó đang chạy
-        if (gamePanel != null) {
-            gamePanel.stop();
-        }
-        // Hiển thị menu
-        switchPanel(mainMenuPanel);
-    }
-
-    public static void showGame() {
-        // Hiển thị game panel và bắt đầu game
-        switchPanel(gamePanel);
-        gamePanel.start(); // Gọi hàm start để khởi động Timer
-    }
-
-    public static void showHighScores() {
-        // Tạm thời chỉ in ra console, bạn có thể tạo một HighScorePanel tương tự
-        System.out.println("Showing High Scores (chưa làm)...");
-    }
-
-    // Helper method để chuyển đổi giữa các panel
-    private static void switchPanel(JPanel panel) {
-        frame.setContentPane(panel);
-        frame.pack();
-        panel.requestFocusInWindow();
+        launch(args);
     }
 }
+
+

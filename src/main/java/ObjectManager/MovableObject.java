@@ -1,6 +1,6 @@
 package ObjectManager;
 
-public abstract class MovableObject extends GameObject {
+public class MovableObject extends GameObject {
     protected double dx;
     protected double dy;
 
@@ -11,6 +11,12 @@ public abstract class MovableObject extends GameObject {
     protected void updatePosition(double dt) {
         x += (int) Math.round(dx * dt);
         y += (int) Math.round(dy * dt);
+    }
+
+    public void render(javafx.scene.canvas.GraphicsContext g) {
+        // Default render method (can be overridden)
+        g.setFill(javafx.scene.paint.Color.GRAY);
+        g.fillRect(x, y, width, height);
     }
 
     public double getDx() { return dx; }

@@ -3,7 +3,8 @@ package ObjectManager;
 // ObjectManager hoặc BallManager
 import java.util.List;
 import java.util.ArrayList;
-import java.awt.Graphics;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import Entities.Ball;
 import Entities.Paddle;
 
@@ -25,7 +26,7 @@ public class BallManager {
         }
     }
 
-    public void renderAll(Graphics g) {
+    public void renderAll(GraphicsContext g) {
         for (Ball b : balls) {
             b.render(g);
         }

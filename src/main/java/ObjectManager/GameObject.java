@@ -1,7 +1,7 @@
 package ObjectManager;
 
-import java.awt.Graphics; //import thu vien de ve moi thu
-import java.awt.Rectangle; //import thu vien de ve hinh chu nhat
+import javafx.scene.canvas.GraphicsContext;
+import javafx.geometry.Rectangle2D;
 
 public abstract class GameObject {
     protected int x, y;
@@ -14,11 +14,14 @@ public abstract class GameObject {
         this.height = height;
     }
 
-    public Rectangle getBounds() {
-        return new Rectangle(x,y,width,height);
+    // Dùng Rectangle2D thay vì java.awt.Rectangle
+    public Rectangle2D getBounds() {
+        return new Rectangle2D(x, y, width, height);
     }
 
-    public abstract void render(Graphics g);
+    // Vẽ bằng JavaFX GraphicsContext
+    public abstract void render(GraphicsContext g);
+
     public void update(double dt) {}
 
     public int getX() { return x; }
@@ -30,5 +33,4 @@ public abstract class GameObject {
     public void setY(int y) { this.y = y; }
     public void setWidth(int width) { this.width = width; }
     public void setHeight(int height) { this.height = height; }
-
 }

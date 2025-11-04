@@ -1,0 +1,28 @@
+// Level 1
+LEVEL 1
+NAME First Steps
+AUTHOR GameDev
+WIDTH 10
+HEIGHT 6
+MAP
+
+11S11S11S1
+BREAK
+
+// Level 2
+LEVEL 2
+NAME Challenge Ahead
+AUTHOR GameDev
+WIDTH 12
+HEIGHT 8
+MAP
+x1S1x1S1x1S1
+1133xx3S1133
+13x  xx  x31
+1S3S 3S3 3S1
+111x xx x111
+1x3x 3x3 x3x
+S11S S1S 11S
+3xx3 3x3 xx3
+BREAK
+

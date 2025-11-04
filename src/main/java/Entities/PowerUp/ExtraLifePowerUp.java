@@ -2,30 +2,26 @@ package Entities.PowerUp;
 
 public class ExtraLifePowerUp extends PowerUp implements IPowerUp {
     public ExtraLifePowerUp(float x, float y) {
-        super(x, y, 4);
+        super(x, y, 4, "/elPW.png");
     }
 
     @Override
     public void activate() {
-        System.out.println("Them 1 mang!");
         active = true;
-        // TODO: player.addLife();
+        // TODO: integrate with player/lives system: player.addLife();
+        System.out.println("Added 1 life");
     }
 
     @Override
     public void deactivate() {
-        System.out.println("Khong gioi han thoi gian");
+        // Extra life is instant; nothing to deactivate
     }
 
     @Override
     public void update() {
-        // Extra life không có thời gian giới hạn
+        // Extra life item falls until collected
         fall();
     }
-
-    @Override
-    public boolean isActive() {
-        return active;
-    }
 }
+
 

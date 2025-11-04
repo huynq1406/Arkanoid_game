@@ -1,71 +1,66 @@
+// java
 package Entities.PowerUp;
 
-public abstract class PowerUp implements IPowerUp {
-    protected float x, y, size, speed;
-    protected int type; // 1 = big paddle, 2 = small paddle, 3 = multi-ball, 4 = slow, 5 = extra life
-    protected int duration = 30;
-    protected int timer = 20;
-    protected boolean active;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 
+import java.io.InputStream;
 
-    public PowerUp(float x, float y, int type) {
+public abstract class PowerUp {
+    protected double x, y;
+    protected int type;
+    protected int duration = 180; // default frames
+    protected int timer = 0;
+    protected boolean active = false;
+    protected Image image;
+    protected static final double WIDTH = 32;
+    protected static final double HEIGHT = 32;
+    protected static final double FALL_SPEED = 2.5;
+
+    public PowerUp(float x, float y, int type, String imagePath) {
         this.x = x;
         this.y = y;
-        this.size = 50; // khung mặc định của Powerup
-        this.speed = 7; // mặc định là 7
         this.type = type;
-    }
-
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-
-    public void setX(float x) {
-        this.x = x;
-    }
-
-    public void setY(float y) {
-        this.y = y;
-    }
-
-    public void setSize(float size) {
-        this.size = size;
-    }
-
-    public void setSpeed(float speed) {
-        this.speed = speed;
-    }
-
-    public abstract void deactivate();
-
-    public void update() {
-        if (active) {
-            timer++;
-            if (timer > duration) {
-                deactivate();
-            }
-        } else {
-            fall();
+        if (imagePath != null) {
+            try (InputStream is = getClass().getResourceAsStream(imagePath)) {
+                if (is != null) image = new Image(is);
+            } catch (Exception ignored) { image = null; }
         }
     }
 
+    public int getType() { return type; }
+    public double getX() { return x; }
+    public double getY() { return y; }
+    public double getWidth() { return WIDTH; }
+    public double getHeight() { return HEIGHT; }
+
+    // default falling behaviour
     public void fall() {
-        y += speed;
+        this.y += FALL_SPEED;
     }
 
-    public boolean isActive() {
-        return active;
+    public void render(GraphicsContext g) {
+        if (image != null) {
+            g.drawImage(image, x, y, WIDTH, HEIGHT);
+        } else {
+            g.setFill(Color.LIGHTGREEN);
+            g.fillRect(x, y, WIDTH, HEIGHT);
+            g.setStroke(Color.BLACK);
+            g.strokeRect(x, y, WIDTH, HEIGHT);
+        }
+    }
+
+    public boolean isActive() { return active; }
+
+    // subclasses must implement
+    public abstract void activate();
+    public abstract void deactivate();
+    public abstract void update();
+
+    // simple helper for outside code to decide removal
+    public boolean isOffScreen(double screenHeight) {
+        return y > screenHeight + 50;
     }
 }
+

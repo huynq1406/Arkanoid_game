@@ -1,9 +1,10 @@
 package Entities.bricks;
 
-import java.awt.*;
 import java.util.List;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 
-import Entities.Ball;
+import Entities.*;
 
 public class IndestructibleBrick extends AbstractBrick {
     public IndestructibleBrick(int x, int y, int width, int height) {
@@ -11,26 +12,24 @@ public class IndestructibleBrick extends AbstractBrick {
     }
 
     public void update() {
-            // gạch không bao giờ bị phá
         destroyed = false;
     }
 
     @Override
     public boolean takeHit(List<AbstractBrick> allBricks) {
-        // Gạch không bao giờ bị phá
         return false;
     }
 
 
     public Color getBrickColor() {
-        return Color.DARK_GRAY;
+        return Color.DARKGRAY;
     }
 
-    public void render(Graphics g) {
-        g.setColor(getBrickColor());
+    public void render(GraphicsContext g) {
+        g.setFill(getBrickColor());
         g.fillRect(x,y,width,height);
 
-        g.setColor(Color.BLACK);
-        g.drawRect(x,y,width,height);
+        g.setStroke(Color.BLACK);
+        g.strokeRect(x,y,width,height);
     }
 }
