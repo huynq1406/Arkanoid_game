@@ -241,7 +241,6 @@ public class MainMenuPane extends StackPane {
             nameField.requestFocus();
         });
 
-
         /**
          * Sap xep thu tu layer.
          */
@@ -293,7 +292,7 @@ public class MainMenuPane extends StackPane {
         }
 
         final DropShadow finalGlow = glow;
-
+        //dieu khien chuot
         b.setOnMouseEntered(event -> {
             if (withGlow) {
                 b.setEffect(finalGlow);
