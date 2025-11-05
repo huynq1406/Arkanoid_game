@@ -47,6 +47,7 @@ public class Main extends Application {
                 GamePanel.WIDTH,
                 GamePanel.HEIGHT,
                 gamePanel,
+                ball,
                 new Entities.Ball(400, 300, 10),
                 new Entities.Paddle(350, 550, 100, 20),
                 playerName
