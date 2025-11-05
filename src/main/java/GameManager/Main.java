@@ -31,7 +31,6 @@ public class Main extends Application {
                 (ActionEvent e) -> quitGame()
         );
         scene = new Scene(menuPane, GamePanel.WIDTH, GamePanel.HEIGHT);
-//        primaryStage.setTitle("Arkanoid Game");
         primaryStage.setScene(scene);
         primaryStage.setResizable(false);
         primaryStage.show();
