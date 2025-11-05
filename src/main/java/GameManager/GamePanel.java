@@ -49,12 +49,12 @@ public class GamePanel extends Pane {
         this.gameManager = gm;
     }
 
-    /** Return canvas GraphicsContext so GameManager can draw HUD/overlays */
+
     public GraphicsContext getGraphicsContext() {
         return canvas.getGraphicsContext2D();
     }
 
-    /** JavaFX: gọi mỗi frame để vẽ (thay paintComponent) */
+
     public void render() {
         GraphicsContext g = canvas.getGraphicsContext2D();
 

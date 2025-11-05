@@ -25,6 +25,7 @@ public class GameManager {
     private List<AbstractBrick> bricks = new ArrayList<>();
     private final Ball ball;
     private final Paddle paddle;
+    private String playerName;
     private List<Entities.PowerUp.PowerUp> powerUps = new ArrayList<>();
 
     private TextMapLevel currentLevel;
@@ -37,12 +38,13 @@ public class GameManager {
 
     private enum CollisionSide { NONE, LEFT, RIGHT, TOP, BOTTOM }
 
-    public GameManager(int width, int height, GamePanel panel, Ball ball, Paddle paddle) {
+    public GameManager(int width, int height, GamePanel panel, Ball ball, Paddle paddle, String playerName) {
         this.width = width;
         this.height = height;
         this.panel  = panel;
         this.ball   = ball;
         this.paddle = paddle;
+        this.playerName = playerName;
 
         // try to load explosion image from resources (/images/explosion.png)
         InputStream is = getClass().getResourceAsStream("/images/explosion.png");
@@ -98,8 +100,6 @@ public class GameManager {
 
 
     private void tick(double dt) {
-        // If Ball/Paddle have update() methods, call them here
-        // e.g. ball.update(); paddle.update();
         ball.update(dt, paddle);
         paddle.update(dt);// giả sử dt = 4.0 ms cho paddle (nếu cần)
         checkCollisionWithWalls();
@@ -107,17 +107,12 @@ public class GameManager {
         checkCollisionWithBricks();
         removeDestroyedBricks();
 
-        // render game objects via JavaFX canvas
         panel.render();
 
-        // update and render transient effects (explosions, etc.)
         updateAndRenderEffects();
 
-        // draw HUD (score, lives) on same canvas
         drawHUD();
     }
-
-    /* --- Collision helpers using JavaFX Bounds built from existing getters --- */
 
     private Bounds boundsFrom(Ball b) {
         return new BoundingBox(b.getX(), b.getY(), b.getWidth(), b.getHeight());
@@ -177,7 +172,6 @@ public class GameManager {
         if (br.getMinX() <= 0 && ball.getDx() < 0)                 reflectBall(1, 0);  // left wall
         if (br.getMaxX() >= width && ball.getDx() > 0)             reflectBall(-1, 0); // right wall
         if (br.getMinY() <= 0 && ball.getDy() < 0)                 reflectBall(0, 1);  // ceiling
-        // bottom handled elsewhere (life loss)
     }
 
     private void checkCollisionWithPaddle() {
@@ -216,13 +210,6 @@ public class GameManager {
             adjustBallPosition(bBall, boundsFrom(brick), side);
 
             boolean destroyedNow = brick.takeHit(bricks);
-//            switch (side) {
-//                case LEFT:  reflectBall(-1, 0); break;
-//                case RIGHT: reflectBall( 1, 0); break;
-//                case TOP:   reflectBall( 0,-1); break;
-//                case BOTTOM:reflectBall( 0, 1); break;
-//                default: break;
-//            }
 
             if (destroyedNow) {
                 // spawn explosion effect at brick's position
