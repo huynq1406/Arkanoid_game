@@ -53,10 +53,10 @@ public class GameManager {
         this.height = height;
         this.panel  = panel;
         this.ball   = ball;
+        ballManager.addBall(this.ball);
         this.paddle = paddle;
         this.playerName = playerName;
         this.onGameOver = onGameOver;
-
         ballManager.addBall(this.ball);
 
         // try to load explosion image from resources (/images/explosion.png)
@@ -131,11 +131,9 @@ public class GameManager {
         powerUpManager.updateAll();
 
         checkLoseLife();
-        for (Ball b : ballManager.getBalls()) {
-            checkCollisionWithWalls(b);
-            checkCollisionWithPaddle(b);
-            checkCollisionWithBricks(b);
-        }
+        checkCollisionWithWalls();
+        checkCollisionWithPaddle();
+        checkCollisionWithBricks();
         checkCollisionWithPowerUps();
         removeDestroyedBricks();
 
@@ -215,19 +213,18 @@ public class GameManager {
         }
     }
 
-    // GameManager.java
-    private void checkCollisionWithWalls(Ball b) { // <--- NHẬN VÀO BALL
-        Bounds br = boundsFrom(b); // Cần hàm boundsFrom(Ball b)
-        if (br.getMinX() <= 0 && b.getDx() < 0)     reflectBall(b, 1, 0);  // left wall
-        if (br.getMaxX() >= width && b.getDx() > 0) reflectBall(b, -1, 0); // right wall
-        if (br.getMinY() <= 0 && b.getDy() < 0)     reflectBall(b, 0, 1);  // ceiling
+    private void checkCollisionWithWalls() {
+        Bounds br = boundsFrom(ball);
+        if (br.getMinX() <= 0 && ball.getDx() < 0)                 reflectBall(1, 0);  // left wall
+        if (br.getMaxX() >= width && ball.getDx() > 0)             reflectBall(-1, 0); // right wall
+        if (br.getMinY() <= 0 && ball.getDy() < 0)                 reflectBall(0, 1);  // ceiling
     }
 
-    private void checkCollisionWithPaddle(Ball b) {
-        Bounds bBall = boundsFrom(b);
+    private void checkCollisionWithPaddle() {
+        Bounds bBall = boundsFrom(ball);
         Bounds bPaddle = boundsFrom(paddle);
         if (bBall.intersects(bPaddle) && ball.getDy() > 0) {
-            reflectBall(b, 0, -1); // bounce up
+            reflectBall(0, -1); // bounce up
             double dirX = ball.getDirX(), dirY = ball.getDirY();
             double minAbsY = 0.35;
             if (Math.abs(dirY) < minAbsY) {
@@ -237,13 +234,11 @@ public class GameManager {
         }
     }
 
-    // GameManager.java
-    private void checkCollisionWithBricks(Ball b) { // <--- NHẬN VÀO BALL
-        Bounds bBall = boundsFrom(b);
+    private void checkCollisionWithBricks() {
+        Bounds bBall = boundsFrom(ball);
         boolean reflectedHoriz = false;
         boolean reflectedVert = false;
 
-        // Lặp qua các viên gạch
         for (AbstractBrick brick : bricks) {
             if (brick.isDestroyed()) {
                 continue;
@@ -257,12 +252,12 @@ public class GameManager {
             // Adjust vị trí bóng ra khỏi brick để tránh kẹt
             adjustBallPosition(bBall, boundsFrom(brick), side);
 
-
             boolean destroyedNow = brick.takeHit(bricks);
 
             if (destroyedNow) {
-                // ... (spawn explosion effect)
+                // spawn explosion effect at brick's position
                 effects.add(new ExplosionEffect(brick.getX(), brick.getY(), 30, explosionImage));
+
                 // Thêm xác suất rơi power-up khi gạch bị phá
                 double rand = Math.random();
                 if (rand < 1 ) {
@@ -283,17 +278,15 @@ public class GameManager {
 
                 score += (brick instanceof StrongBricks) ? 150 : 50;
                 score += (brick instanceof NormalBricks) ? 100 : 0;
-
-                // Chỉ tăng tốc độ của bóng va chạm (b)
-                double newSpeed = Math.min(420, b.getSpeed() * 1.02);
-                b.setSpeed(newSpeed);
+                double newSpeed = Math.min(420, ball.getSpeed() * 1.02);
+                ball.setSpeed(newSpeed);
             } else if (brick instanceof ExplosiveBrick) {
                 ((ExplosiveBrick)brick).takeHit(bricks);
             }
         }
         // Apply reflect chỉ 1 lần sau loop
-        if (reflectedHoriz) reflectBall(b, b.getDx() > 0 ? -1 : 1, 0); // <--- Dùng b
-        if (reflectedVert) reflectBall(b, 0, b.getDy() > 0 ? -1 : 1); // <--- Dùng b
+        if (reflectedHoriz) reflectBall(ball.getDx() > 0 ? -1 : 1, 0);  // Flip x dựa trên dir hiện tại
+        if (reflectedVert) reflectBall(0, ball.getDy() > 0 ? -1 : 1);// Flip y
     }
 
     private void checkCollisionWithPowerUps() {
@@ -322,12 +315,12 @@ public class GameManager {
         panel.setRefs(ball, paddle, bricks);
     }
 
-    private void reflectBall(Ball b, int flipX, int flipY) {
-        double dirX = b.getDirX();
-        double dirY = b.getDirY();
+    private void reflectBall(int flipX, int flipY) {
+        double dirX = ball.getDirX();
+        double dirY = ball.getDirY();
         if (flipX != 0) dirX = -dirX;
         if (flipY != 0) dirY = -dirY;
-        b.setDirection(dirX, dirY);
+        ball.setDirection(dirX, dirY);
     }
 
     private void drawHUD() {
@@ -338,39 +331,20 @@ public class GameManager {
         g.fillText("Lives: " + lives, 10, 50);
         g.setFont(Font.font("Times New Roman", 20));
         g.fillText("Level: " + levelIndex, 370, 20);
-//        if (ball.getY() > height) {
-//            loseLife();
-//            ball.resetToPaddle(paddle);
-//        }
+        if (ball.getY() > height) {
+            loseLife();
+            ball.resetToPaddle(paddle);
+        }
         // add more HUD drawing here (lives, level, etc.)
     }
 
     private void checkLoseLife() {
-        Ball mainBall = this.ball;
-        List<Ball> allBalls = ballManager.getBalls();
+        boolean lost = ballManager.getBalls().stream()
+                .anyMatch(b -> b.getY() > height);
 
-        // 1. Xác định bóng phụ nào đã mất
-        List<Ball> ballsToRemove = allBalls.stream()
-                .filter(b -> b != mainBall && b.getY() > height)
-                .toList(); // Hoặc .collect(Collectors.toList()) trước Java 16
-
-        // 2. Xóa các bóng phụ đã mất khỏi BallManager
-        allBalls.removeAll(ballsToRemove);
-
-        // 3. Kiểm tra bóng chính
-        if (mainBall.getY() > height) {
-            mainBall.resetToPaddle(paddle);
-
-            // 4. Logic mất mạng: Chỉ trừ mạng nếu bóng chính vừa được reset
-            // VÀ nó là bóng duy nhất còn lại trong Manager
-            if (allBalls.size() == 1 && !mainBall.isLaunched()) {
-                loseLife();
-            }
-        }
-
-        // Đảm bảo Manager không trống rỗng
-        if (allBalls.isEmpty()) {
-            ballManager.addBall(mainBall);
+        if (lost) {
+            loseLife();
+            resetBallsToPaddle();
         }
     }
 
@@ -448,5 +422,9 @@ public class GameManager {
         }
     }
 }
+
+
+
+
 
 
