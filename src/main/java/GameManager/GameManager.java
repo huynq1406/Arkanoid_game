@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 public class GameManager {
     private final int width;
@@ -26,6 +27,8 @@ public class GameManager {
     private final GamePanel panel;
     private final Ball ball;
     private final Paddle paddle;
+    private String playerName;
+    private final Consumer<Integer> onGameOver;
 
     private BallManager ballManager = new BallManager();
     private PowerUpManager powerUpManager = new PowerUpManager();
@@ -45,13 +48,14 @@ public class GameManager {
 
     private enum CollisionSide { NONE, LEFT, RIGHT, TOP, BOTTOM }
 
-    public GameManager(int width, int height, GamePanel panel, Ball initialBall, Ball ball, Paddle paddle) {
+    public GameManager(int width, int height, GamePanel panel, Ball ball, Paddle paddle, String playerName, Consumer<Integer> onGameOver) {
         this.width = width;
         this.height = height;
         this.panel  = panel;
         this.ball   = ball;
         this.paddle = paddle;
-//        ballManager.addBall(initialBall);
+        this.playerName = playerName;
+        this.onGameOver = onGameOver;
 
         // try to load explosion image from resources (/images/explosion.png)
         InputStream is = getClass().getResourceAsStream("/images/explosion.png");
@@ -140,10 +144,8 @@ public class GameManager {
         panel.render();
         powerUpManager.renderAll(panel.getGraphicsContext());
 
-        // update and render transient effects (explosions, etc.)
         updateAndRenderEffects();
 
-        // draw HUD (score, lives) on same canvas
         drawHUD();
     }
 
@@ -213,7 +215,6 @@ public class GameManager {
         if (br.getMinX() <= 0 && ball.getDx() < 0)                 reflectBall(1, 0);  // left wall
         if (br.getMaxX() >= width && ball.getDx() > 0)             reflectBall(-1, 0); // right wall
         if (br.getMinY() <= 0 && ball.getDy() < 0)                 reflectBall(0, 1);  // ceiling
-        // bottom handled elsewhere (life loss)
     }
 
     private void checkCollisionWithPaddle() {
@@ -249,13 +250,6 @@ public class GameManager {
             adjustBallPosition(bBall, boundsFrom(brick), side);
 
             boolean destroyedNow = brick.takeHit(bricks);
-//            switch (side) {
-//                case LEFT:  reflectBall(-1, 0); break;
-//                case RIGHT: reflectBall( 1, 0); break;
-//                case TOP:   reflectBall( 0,-1); break;
-//                case BOTTOM:reflectBall( 0, 1); break;
-//                default: break;
-//            }
 
             if (destroyedNow) {
                 // spawn explosion effect at brick's position
@@ -365,8 +359,11 @@ public class GameManager {
         } else {
             gameOver = true;
             loop.stop(); // Dừng vòng lặp
-            panel.showGameOver();
+//            panel.showGameOver();
             // Nếu bạn có giao diện GameOver thì gọi panel.showGameOver();
+            if (onGameOver != null) { //goi ve main bao diem
+                onGameOver.accept(this.score);
+                }
         }
     }
 
