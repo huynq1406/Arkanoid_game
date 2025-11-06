@@ -64,24 +64,6 @@ public class GamePanel extends StackPane {
         this.gameManager = gm;
     }
 
-//    public void showGameOver() {
-//        GraphicsContext g = canvas.getGraphicsContext2D();
-//
-//        // Vẽ nền mờ
-//        g.setFill(new Color(0, 0, 0, 0.7));
-//        g.fillRect(0, 0, WIDTH, HEIGHT);
-//
-//        // Hiển thị chữ GAME OVER
-//        g.setFill(Color.RED);
-//        g.setFont(Font.font("Arial", 60));
-//        g.fillText("GAME OVER", WIDTH / 2.0 - 170, HEIGHT / 2.0 - 20);
-//
-//        // Thêm gợi ý
-//        g.setFill(Color.WHITE);
-//        g.setFont(Font.font("Arial", 24));
-//        g.fillText("Nhấn ESC để thoát", WIDTH / 2.0 - 110, HEIGHT / 2.0 + 40);
-//    }
-
     public GraphicsContext getGraphicsContext() {
         return canvas.getGraphicsContext2D();
     }
