@@ -122,8 +122,6 @@ public class GameManager {
 
 
     private void tick(double dt) {
-        // If Ball/Paddle have update() methods, call them here
-        // e.g. ball.update(); paddle.update();
         if (gameOver) return;
 
         ballManager.updateAll(dt, paddle);
@@ -136,20 +134,23 @@ public class GameManager {
         checkCollisionWithBricks();
         checkCollisionWithPowerUps();
         removeDestroyedBricks();
-
-        // Kiểm tra hoàn thành level SAU removeDestroyedBricks()
         if (bricks.isEmpty() && !gameOver) {
             nextLevel();
         }
-
-        // render game objects via JavaFX canvas
+        if (currentLevel != null) {
+            currentLevel.renderBackground(panel.getGraphicsContext(), width, height);
+        } else {
+            GraphicsContext g = panel.getGraphicsContext();
+            g.setFill(Color.BLACK);
+            g.fillRect(0, 0, width, height);
+            if (currentLevel != null) {
+                currentLevel.renderBackground(g, width, height);
+            }
+        }
         panel.render();
         ballManager.renderAll(panel.getGraphicsContext());
         powerUpManager.renderAll(panel.getGraphicsContext());
-
         updateAndRenderEffects();
-
-        drawHUD();
     }
 
     private void nextLevel() {
@@ -321,21 +322,6 @@ public class GameManager {
         if (flipX != 0) dirX = -dirX;
         if (flipY != 0) dirY = -dirY;
         ball.setDirection(dirX, dirY);
-    }
-
-    private void drawHUD() {
-        GraphicsContext g = panel.getGraphicsContext();
-        // draw simple score text on top-left (overlay)
-        g.setFill(Color.WHITE);
-        g.fillText("Score: " + score, 10, 20);
-        g.fillText("Lives: " + lives, 10, 50);
-        g.setFont(Font.font("Times New Roman", 20));
-        g.fillText("Level: " + levelIndex, 370, 20);
-        if (ball.getY() > height) {
-            loseLife();
-            ball.resetToPaddle(paddle);
-        }
-        // add more HUD drawing here (lives, level, etc.)
     }
 
     private void checkLoseLife() {

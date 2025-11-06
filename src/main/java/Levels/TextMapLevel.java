@@ -6,12 +6,14 @@ import java.util.List;
 import Entities.BrickFactory;
 import Entities.bricks.AbstractBrick;
 import javafx.scene.canvas.GraphicsContext;
-
+import javafx.scene.image.Image;
 
 public class TextMapLevel extends BaseLevel {
 
-    private final String resourcePath; // ví dụ "levels/Map.txt"
-    private final int levelIndex;      // ví dụ 1
+    private final String resourcePath;
+    private final int levelIndex;
+    private Image backgroundImage;
+
 
     // layout mặc định
     private int topPadding = 60;
@@ -25,9 +27,40 @@ public class TextMapLevel extends BaseLevel {
 
     public TextMapLevel(String resourcePath, int levelIndex, GraphicsContext gc) {
         super(gc, 1);
-        this.resourcePath = resourcePath; // THÊM /
+        this.resourcePath = resourcePath;
         this.levelIndex   = levelIndex;
+        loadBackgroundImage();
     }
+
+    private void loadBackgroundImage() {
+        try {
+            String imagePath = "/background" + levelIndex + ".jpg";
+            java.io.InputStream is = getClass().getResourceAsStream(imagePath);
+            if (is != null) {
+                this.backgroundImage = new Image(is);
+            } else {
+                java.io.InputStream defaultIs = getClass().getResourceAsStream("/images/background_default.png");
+                if (defaultIs != null) {
+                    this.backgroundImage = new Image(defaultIs);
+                } else {
+                    this.backgroundImage = null;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error loading background for level " + levelIndex + ": " + e.getMessage());
+            this.backgroundImage = null;
+        }
+    }
+
+    public void renderBackground(GraphicsContext g, double width, double height) {
+        if (backgroundImage != null) {
+            g.drawImage(backgroundImage, 0, 0, width, height);
+        } else {
+            g.setFill(javafx.scene.paint.Color.rgb(20, 20, 30)); // Màu tối nhẹ
+            g.fillRect(0, 0, width, height);
+        }
+    }
+
 
     public void buildFromMap(int panelWidth) {
         List<String> rows = LevelLoader.load(resourcePath, levelIndex);
