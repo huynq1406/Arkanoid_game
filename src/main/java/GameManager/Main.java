@@ -106,12 +106,13 @@ public class Main extends Application {
         }
         scene.setRoot(gamePanel);
         gamePanel.requestFocus();
+        GameHUD hud = gamePanel.getHud();
         this.gameManager = new GameManager(
                 GamePanel.WIDTH, GamePanel.HEIGHT, gamePanel,
                 new Ball(400, 300, 10), new Paddle(350, 550, 100, 20),
                 this.playerName,
                 this::handleGameOver,
-                this.gameHUD
+                hud
         );
         gamePanel.setGameManager(gameManager);
         gameManager.buildLevel();

@@ -320,6 +320,7 @@ public class GameManager {
                     ((PowerUp)p).activate();
                     if (p instanceof ExtraLifePowerUp) {
                         lives++;
+                        gameHUD.updateLives(lives);
                     }
                 }
                 it.remove();
