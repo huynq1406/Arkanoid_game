@@ -77,6 +77,11 @@ public class GameManager {
             explosionImage = null;
         }
         loadBackgroundMusic("/audio/space.mp3");
+        if (this.gameHUD != null) {
+            this.gameHUD.updateScore(this.score); // 0 điểm
+            this.gameHUD.updateLives(this.lives); // 3 mạng
+            this.gameHUD.updateLevel(this.levelIndex); // Level 1
+        }
     }
 
     public void buildLevel() {
@@ -288,6 +293,11 @@ public class GameManager {
 
                 score += (brick instanceof StrongBricks) ? 150 : 50;
                 score += (brick instanceof NormalBricks) ? 100 : 0;
+
+                if (gameHUD != null) {
+                    gameHUD.updateScore(score);
+                }
+
                 double newSpeed = Math.min(420, ball.getSpeed() * 1.02);
                 ball.setSpeed(newSpeed);
             } else if (brick instanceof ExplosiveBrick) {
