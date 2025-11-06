@@ -96,10 +96,14 @@ public class Main extends Application {
     }
 
     private void launchGame() {
-        if (gamePanel == null) gamePanel = new GamePanel();
+        if (gamePanel == null) {
+            gamePanel = new GamePanel();
+            gamePanel.initHUD(() -> {
+                System.out.println("Pause clicked!");
+            });
+        }
         scene.setRoot(gamePanel);
         gamePanel.requestFocus();
-
         this.gameManager = new GameManager(
                 GamePanel.WIDTH, GamePanel.HEIGHT, gamePanel,
                 new Ball(400, 300, 10), new Paddle(350, 550, 100, 20),
