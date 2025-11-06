@@ -23,6 +23,23 @@ public class MultiBallPowerUp extends PowerUp implements IPowerUp {
         newBall.launch();
         balls.add(newBall);
         active = true;
+        for (Ball originalBall : referenceBalls) {
+            // Tạo 2 bóng mới với hướng khác nhau
+            Ball newBall1 = new Ball((int)originalBall.getX(), (int)originalBall.getY(), originalBall.getDiameter()/2);
+            newBall1.launch();
+            newBall1.setDirection(-originalBall.getDirX(), originalBall.getDirY()); // Hướng ngược lại
+
+            Ball newBall2 = new Ball((int)originalBall.getX(), (int)originalBall.getY(), originalBall.getDiameter()/2);
+            newBall2.launch();
+            newBall2.setDirection(originalBall.getDirX() * 0.5, originalBall.getDirY() * 1.5); // Hướng chệch
+
+            // Lỗi ở đây: ballManager phải là một trường được truyền vào
+            if (ballManager != null) {
+                ballManager.addBall(newBall1); // <-- Gọi lỗi NullPointerException
+                ballManager.addBall(newBall2); // <-- Gọi lỗi NullPointerException
+                System.out.println("MultiBall activated, added 2 balls to manager.");
+            }
+        }
     }
 
     @Override
