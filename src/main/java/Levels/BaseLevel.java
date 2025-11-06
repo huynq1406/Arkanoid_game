@@ -14,7 +14,7 @@ import java.io.*;
 
 public class BaseLevel {
     private List<AbstractBrick> bricks;
-    private List<IPowerUp> powerUps;
+    private List<PowerUp> powerUps;
     private Ball ball;
     private Paddle paddle;
 
@@ -55,7 +55,7 @@ public class BaseLevel {
         ball.update(0.1f); //chưa biết điền gì
         paddle.update(0.1f); //chưa biêt điền gì
         checkCollisions();
-        powerUps.forEach(IPowerUp::update);
+        powerUps.forEach(PowerUp::update);
     }
 
     public void render(GraphicsContext g) {

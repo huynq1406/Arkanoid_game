@@ -1,4 +1,3 @@
-// java
 package Entities.PowerUp;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -14,11 +13,11 @@ public abstract class PowerUp {
     protected int timer = 0;
     protected boolean active = false;
     protected Image image;
-    protected static final double WIDTH = 32;
-    protected static final double HEIGHT = 32;
+    protected static final double WIDTH = 64;
+    protected static final double HEIGHT = 64;
     protected static final double FALL_SPEED = 2.5;
 
-    public PowerUp(float x, float y, int type, String imagePath) {
+    public PowerUp(double x, double y, int type, String imagePath) {
         this.x = x;
         this.y = y;
         this.type = type;

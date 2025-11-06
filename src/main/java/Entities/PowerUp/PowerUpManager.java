@@ -26,8 +26,8 @@ public class PowerUpManager {
         Iterator<PowerUp> it = powerUps.iterator();
         while (it.hasNext()) {
             PowerUp p = it.next();
-            if (p instanceof IPowerUp) {
-                IPowerUp ip = (IPowerUp) p;
+            if (p instanceof PowerUp) {
+                PowerUp ip = (PowerUp) p;
                 ip.update();
                 // xóa nếu power-up đã hết hiệu lực hoặc ra khỏi màn hình
                 if (!ip.isActive() && p.getY() > 800) {

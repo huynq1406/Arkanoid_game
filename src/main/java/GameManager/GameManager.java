@@ -27,6 +27,7 @@ public class GameManager {
     private final int width;
     private final int height;
     private final GamePanel panel;
+    private final GameHUD gameHUD;
     private final Ball ball;
     private final Paddle paddle;
     private String playerName;
@@ -52,7 +53,7 @@ public class GameManager {
 
     private enum CollisionSide { NONE, LEFT, RIGHT, TOP, BOTTOM }
 
-    public GameManager(int width, int height, GamePanel panel, Ball ball, Paddle paddle, String playerName, Consumer<Integer> onGameOver) {
+    public GameManager(int width, int height, GamePanel panel, Ball ball, Paddle paddle, String playerName, Consumer<Integer> onGameOver, GameHUD gameHUD) {
         this.width = width;
         this.height = height;
         this.panel  = panel;
@@ -61,6 +62,7 @@ public class GameManager {
         this.paddle = paddle;
         this.playerName = playerName;
         this.onGameOver = onGameOver;
+        this.gameHUD = gameHUD;
         ballManager.addBall(this.ball);
 
         // try to load explosion image from resources (/images/explosion.png)
@@ -304,8 +306,8 @@ public class GameManager {
         while (it.hasNext()) {
             PowerUp p = it.next();
             if (bPaddle.intersects(p.getX(), p.getY(), p.getWidth(), p.getHeight())) {
-                if (p instanceof IPowerUp) {
-                    ((IPowerUp)p).activate();
+                if (p instanceof PowerUp) {
+                    ((PowerUp)p).activate();
                     if (p instanceof ExtraLifePowerUp) {
                         lives++;
                     }
@@ -350,6 +352,11 @@ public class GameManager {
 
     private void loseLife() {
         lives--;
+
+        if (gameHUD != null) {
+            gameHUD.updateLives(lives);
+        }
+
         if (lives > 0) {
             ball.resetToPaddle(paddle);
             System.out.println("Bạn còn " + lives + " mạng.");
@@ -433,6 +440,13 @@ public class GameManager {
 
     private void loadBackgroundMusic(String audioPath) {
         try {
+            java.net.URL resource = getClass().getResource(audioPath);
+
+            if (resource == null) {
+                // Ném ngoại lệ rõ ràng nếu không tìm thấy
+                throw new java.io.FileNotFoundException("Tài nguyên không tìm thấy trong classpath: " + audioPath);
+            }
+
             Media sound = new Media(getClass().getResource(audioPath).toExternalForm());
             backgroundMusicPlayer = new MediaPlayer(sound);
 

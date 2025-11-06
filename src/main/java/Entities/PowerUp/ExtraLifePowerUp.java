@@ -1,7 +1,7 @@
 package Entities.PowerUp;
 
-public class ExtraLifePowerUp extends PowerUp implements IPowerUp {
-    public ExtraLifePowerUp(float x, float y) {
+public class ExtraLifePowerUp extends PowerUp {
+    public ExtraLifePowerUp(double x, double y) {
         super(x, y, 4, "/elPW.png");
     }
 
