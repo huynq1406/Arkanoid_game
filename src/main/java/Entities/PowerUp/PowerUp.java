@@ -12,6 +12,7 @@ public abstract class PowerUp {
     protected int duration = 180; // default frames
     protected int timer = 0;
     protected boolean active = false;
+    protected boolean collected = false;
     protected Image image;
     protected static final double WIDTH = 64;
     protected static final double HEIGHT = 64;
@@ -40,6 +41,8 @@ public abstract class PowerUp {
     }
 
     public void render(GraphicsContext g) {
+        if (collected) return;
+
         if (image != null) {
             g.drawImage(image, x, y, WIDTH, HEIGHT);
         } else {
@@ -51,11 +54,23 @@ public abstract class PowerUp {
     }
 
     public boolean isActive() { return active; }
+    public boolean isCollected() { return collected; }
 
     // subclasses must implement
     public abstract void activate();
     public abstract void deactivate();
-    public abstract void update();
+    public void update() {
+        if (active) {
+            timer++;
+            if (timer >= duration) deactivate();
+        } else if (!collected) {
+            fall();
+        }
+    }
+
+    public void setCollected(boolean collected) {
+        this.collected = collected;
+    }
 
     // simple helper for outside code to decide removal
     public boolean isOffScreen(double screenHeight) {

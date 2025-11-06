@@ -26,13 +26,19 @@ public class PowerUpManager {
         Iterator<PowerUp> it = powerUps.iterator();
         while (it.hasNext()) {
             PowerUp p = it.next();
-            if (p instanceof PowerUp) {
-                PowerUp ip = (PowerUp) p;
-                ip.update();
-                // xóa nếu power-up đã hết hiệu lực hoặc ra khỏi màn hình
-                if (!ip.isActive() && p.getY() > 800) {
-                    it.remove();
-                }
+            p.update(); // Luôn gọi update (cho timer hoặc fall)
+
+            // Điều kiện 1: Xóa nếu bị lỡ (chưa nhặt VÀ rơi ra khỏi màn hình)
+            if (!p.isCollected() && p.isOffScreen(800)) {
+                it.remove();
+                continue;
+            }
+
+            // Điều kiện 2: Xóa nếu đã nhặt VÀ hiệu ứng đã kết thúc
+            // - Loại tức thời: isCollected() = true, isActive() = false (vì ta đã xóa active=true)
+            // - Loại có thời gian: isCollected() = true, isActive() = false (sau khi timer hết)
+            if (p.isCollected() && !p.isActive()) {
+                it.remove();
             }
         }
     }

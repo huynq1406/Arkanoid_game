@@ -32,16 +32,6 @@ public class BigPaddlePW extends PowerUp {
     }
 
     @Override
-    public void update() {
-        if (active) {
-            timer++;
-            if (timer >= duration) deactivate();
-        } else {
-            fall();
-        }
-    }
-
-    @Override
     public boolean isActive() {
         return active;
     }

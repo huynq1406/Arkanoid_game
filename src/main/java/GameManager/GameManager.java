@@ -38,7 +38,6 @@ public class GameManager {
     private BallManager ballManager = new BallManager();
     private PowerUpManager powerUpManager = new PowerUpManager();
     private List<AbstractBrick> bricks = new ArrayList<>();
-    private List<PowerUp> powerUps = new ArrayList<>();
 
     private TextMapLevel currentLevel;
     private AnimationTimer loop;
@@ -91,6 +90,7 @@ public class GameManager {
             currentLevel.buildFromMap(GamePanel.WIDTH);
             bricks = new ArrayList<>(currentLevel.getBricks());
             panel.setRefs(ball, paddle, bricks);
+            powerUpManager = new PowerUpManager();
             ball.resetToPaddle(paddle);  // Reset ball khi bắt đầu level mới
             System.out.println("Loaded level " + levelIndex);
         } catch (IllegalArgumentException e) {
@@ -147,9 +147,20 @@ public class GameManager {
         checkCollisionWithBricks();
         checkCollisionWithPowerUps();
         removeDestroyedBricks();
-        if (bricks.isEmpty() && !gameOver) {
+
+        boolean breakableBricksLeft = false;
+        for (AbstractBrick brick : bricks) {
+            if (!(brick instanceof IndestructibleBrick)) {
+                breakableBricksLeft = true; // Vẫn còn gạch có thể phá
+                break; // Thoát vòng lặp
+            }
+        }
+
+        // Nếu không còn gạch nào có thể phá (chỉ còn gạch Unbreakable hoặc không còn gạch nào)
+        if (!breakableBricksLeft && !gameOver) {
             nextLevel();
         }
+
         if (currentLevel != null) {
             currentLevel.renderBackground(panel.getGraphicsContext(), width, height);
         } else {
@@ -312,18 +323,17 @@ public class GameManager {
 
     private void checkCollisionWithPowerUps() {
         Bounds bPaddle = boundsFrom(paddle);
-        Iterator<PowerUp> it = powerUpManager.getPowerUps().iterator();
-        while (it.hasNext()) {
-            PowerUp p = it.next();
+        for (PowerUp p : powerUpManager.getPowerUps()) {
+            if (p.isCollected()) continue;
+
             if (bPaddle.intersects(p.getX(), p.getY(), p.getWidth(), p.getHeight())) {
-                if (p instanceof PowerUp) {
-                    ((PowerUp)p).activate();
-                    if (p instanceof ExtraLifePowerUp) {
-                        lives++;
-                        gameHUD.updateLives(lives);
-                    }
+                p.activate();       // Kích hoạt hiệu ứng
+                p.setCollected(true); // Đánh dấu là đã nhặt
+
+                if (p instanceof ExtraLifePowerUp) {
+                    lives++;
+                    gameHUD.updateLives(lives);
                 }
-                it.remove();
             }
         }
     }

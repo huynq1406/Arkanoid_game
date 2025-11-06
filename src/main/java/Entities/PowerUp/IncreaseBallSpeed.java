@@ -28,15 +28,5 @@ public class IncreaseBallSpeed extends PowerUp  {
             active = false;
         }
     }
-
-    @Override
-    public void update() {
-        if (active) {
-            timer++;
-            if (timer >= duration) deactivate();
-        } else {
-            fall();
-        }
-    }
 }
 

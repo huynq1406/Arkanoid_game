@@ -6,7 +6,12 @@ WIDTH 10
 HEIGHT 6
 MAP
 
-11S11S11S1
+1111SS1111
+1x3x3x3x11
+S1 1SS1 1S
+13      31
+1x1x1x1x11
+BREAK
 
 BREAK
 
@@ -20,7 +25,7 @@ MAP
 x1S1x1S1x1S1
 1133xx3S1133
 13x  xx  x31
-1S3S 3S3 3S1
+1S3 3SS3 3S1
 
 BREAK
 // Level 3
@@ -31,13 +36,13 @@ WIDTH 15
 HEIGHT 10
 MAP
 111111111111111
-1Sx x x x x x1
+1Sx x x x x xS1
 1 111 111 111 1
 1x xSx xSx xSx1
 111 111 111 111
-1Sx x x x x x1
+1Sx x x x x xS1
 1 111 111 111 1
 1x xSx xSx xSx1
 111 111 111 111
-1Sx x x x x x1
+1Sx x x x x xS1
 BREAK
