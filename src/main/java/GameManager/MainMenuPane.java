@@ -15,6 +15,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
@@ -26,6 +27,7 @@ import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 
 import java.util.List;
+import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -34,7 +36,16 @@ public class MainMenuPane extends StackPane {
     private final ImageView titleView;
     private VBox nameOverlay;
     private VBox highScoreOverlay;
+    private VBox gameOveroverlay;
+    private VBox settingsOverlay;
+
+    private Label gameOverScoreLabel;
     private final Button highScoreButton;
+    private Runnable postHighScoreAction = null; //bien luu hanh dong khi dong highscore
+
+    private MediaPlayer mediaPlayer;
+    private Button musicBtnOn;
+    private Button musicBtnOff;
 
     private MediaView createBackgroundVideo() {
         try {
@@ -53,6 +64,10 @@ public class MainMenuPane extends StackPane {
             System.out.println("Không thể tải video menu: " + ex.getMessage());
             return null;
         }
+    }
+
+    public MediaPlayer getBackgroundMusicPlayer() {
+        return this.mediaPlayer;
     }
 
     private ImageView createTitileView() {
@@ -82,35 +97,103 @@ public class MainMenuPane extends StackPane {
         return button;
     }
 
-    private void createNameOverlay(Consumer<String> playAction) {
-        nameOverlay = createBaseOverlay(300, 250);
+    private void createGameOveroverlay(Runnable playAgainAction, Supplier<List<String>> highScoreAction) {
+        gameOveroverlay = createBaseOverlay(250, 100);
+        gameOveroverlay.setSpacing(20);
 
-        BorderPane header = new BorderPane();
+        DropShadow blueGlow = new DropShadow();
+        blueGlow.setColor(Color.CORNFLOWERBLUE);
+        blueGlow.setRadius(30);
+        blueGlow.setSpread(0.5);
+
+        ImageView gameOverImg = new ImageView();
+        try {
+            gameOverImg.setImage(new Image(getClass().getResourceAsStream("/Gameover.png")));
+            if (gameOverImg!= null) gameOverImg.setFitWidth(250);
+            VBox.setMargin(gameOverImg, new Insets(20, 0, 0, 0));
+            gameOverImg.setPreserveRatio(true);
+            gameOverImg.setEffect(blueGlow);
+        } catch (Exception e) {
+            Label lbl = new Label("GAMEOVER");
+            lbl.setTextFill(Color.WHITE);
+            lbl.setFont(Font.font("Verdana", 24));
+        }
+
+        gameOverScoreLabel = new Label();
+        gameOverScoreLabel.setTextFill(Color.WHITE);
+        gameOverScoreLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 18));
+        gameOverScoreLabel.setStyle("-fx-text-alignment: center;");
+
+        Button playAgainButton = createMenuButton("PlayAgain", true);
+        ImageView playAgainImg = (ImageView) playAgainButton.getGraphic();
+        if (playAgainImg != null) playAgainImg.setFitWidth(250);
+        VBox.setMargin(playAgainButton, new Insets(0, 0, 0, 0));
+
+        playAgainButton.setOnAction(e -> {
+            postHighScoreAction = playAgainAction;
+            updateHighScoreList(highScoreAction);
+            showOverlay(highScoreOverlay);
+        });
+
+        Button menuButton = createMenuButton("Menu", true);
+        ImageView menuImg = (ImageView) menuButton.getGraphic();
+        if (menuImg != null) menuImg.setFitWidth(165);
+
+        VBox.setMargin(menuButton, new Insets(0, 0, 0, 0));
+        menuButton.setOnAction(e -> {
+            postHighScoreAction = null;
+            updateHighScoreList(highScoreAction);
+            showOverlay(highScoreOverlay);
+        });
+        gameOveroverlay.getChildren().addAll(gameOverImg, gameOverScoreLabel, playAgainButton, menuButton);
+    }
+
+    public void showGameOver(String playerName, int score) {
+        gameOverScoreLabel.setText(playerName.toUpperCase() + "\nSCORE: " + score);
+        showOverlay(gameOveroverlay);
+    }
+
+    private void createNameOverlay(Consumer<String> playAction) {
+        nameOverlay = createBaseOverlay(300,250);
+        nameOverlay.setSpacing(8);
+        StackPane header = new StackPane();
+        header.setAlignment(Pos.CENTER);
+
         ImageView nameTitle = new ImageView();
         try {
             nameTitle.setImage(new Image(getClass().getResourceAsStream("/Entername.png")));
-            nameTitle.setFitWidth(250);
+            nameTitle.setFitWidth(290);
             nameTitle.setPreserveRatio(true);
-            header.setCenter(nameTitle);
         } catch (Exception e) {
             Label lbl = new Label("ENTER YOUR NAME");
             lbl.setTextFill(Color.CYAN);
             lbl.setFont(Font.font("Verdana", 24));
-            header.setCenter(lbl);
         }
-        header.setRight(createCloseButton(nameOverlay)); //đang set ô nhập tên been phải closeButton
+        Button closeButton = createCloseButton(nameOverlay);
+        StackPane.setAlignment(closeButton, Pos.TOP_RIGHT);
+        closeButton.setTranslateX(30);
+        closeButton.setTranslateY(-30);
+        header.getChildren().addAll(nameTitle, closeButton);
+
         //Nhap ten
         TextField nameField = new TextField();
         nameField.setMaxWidth(250);
         nameField.setFont(Font.font("Verdana", 16));
         nameField.setAlignment(Pos.CENTER);
         styleTextField(nameField, false);
+        VBox.setMargin(nameField, new Insets(15, 0, 5, 0));
 
         Label errorLabel = new Label();
         errorLabel.setTextFill(Color.RED);
         errorLabel.setVisible(false);
 
+
         Button okButton = createMenuButton("OK", false);
+        ImageView okImg = (ImageView) okButton.getGraphic();
+        if (okImg != null) {
+            okImg.setFitWidth(220);
+        }
+        VBox.setMargin(okButton, new Insets(10, 0, 0, 0));
         Runnable submitAction = () -> {
             String name = nameField.getText().trim();
             if (validateName(name, errorLabel, nameField)) {
@@ -142,7 +225,7 @@ public class MainMenuPane extends StackPane {
             imgHighScore.setPreserveRatio(true);
 
             DropShadow blueGlow = new DropShadow();
-            blueGlow.setColor(Color.CYAN);
+            blueGlow.setColor(Color.CORNFLOWERBLUE);
             blueGlow.setRadius(25);
             blueGlow.setSpread(0.4);
             imgHighScore.setEffect(blueGlow);
@@ -151,7 +234,7 @@ public class MainMenuPane extends StackPane {
         } catch (Exception e) {
             Label fallbackTitle = new Label("HIGH SCORES");
             fallbackTitle.setFont(Font.font("Verdana", FontWeight.BOLD, 28));
-            fallbackTitle.setTextFill(Color.GOLD);
+            fallbackTitle.setTextFill(Color.CORNFLOWERBLUE);
             fallbackTitle.setEffect(new DropShadow(10, Color.CYAN));
             header.setCenter(fallbackTitle);
         }
@@ -197,14 +280,93 @@ public class MainMenuPane extends StackPane {
             xButton.setScaleY(1.0);
             xButton.setCursor(Cursor.DEFAULT);
         });
-        xButton.setOnAction(e -> hideOverlay(targetOverlay));
+        xButton.setOnAction(e -> {
+
+            if (targetOverlay == highScoreOverlay && postHighScoreAction != null) {
+                targetOverlay.setVisible(false);
+                postHighScoreAction.run();
+                postHighScoreAction = null;
+            } else {
+                hideOverlay(targetOverlay);
+            }
+        });
         return xButton;
+    }
+
+    private void createSettingsOverlay(Supplier<Boolean> musicStateGetter, Consumer<Boolean> musicStateSetter) {
+        settingsOverlay = createBaseOverlay(300, 250);
+        settingsOverlay.setSpacing(20);
+
+        StackPane header = new StackPane();
+        header.setAlignment(Pos.CENTER);
+        ImageView musictitle = new ImageView();
+        try {
+            musictitle.setImage(new Image(getClass().getResourceAsStream("/Music.png")));
+            musictitle.setFitWidth(200);
+            musictitle.setPreserveRatio(true);
+            DropShadow blueGlow = new DropShadow();
+            blueGlow.setColor(Color.CORNFLOWERBLUE); // Hoặc Color.CYAN tùy bạn chọn
+            blueGlow.setRadius(20);
+            blueGlow.setSpread(0.4);
+            musictitle.setEffect(blueGlow);
+            header.getChildren().add(musictitle);
+        } catch (Exception e) {
+            Label lbl = new Label("MUSIC");
+            lbl.setTextFill(Color.CYAN);
+            lbl.setFont(Font.font("Verdana", FontWeight.BOLD, 26));
+            header.getChildren().add(lbl);
+        }
+        Button closeButton = createCloseButton(settingsOverlay);
+        StackPane.setAlignment(closeButton, Pos.TOP_RIGHT);
+        closeButton.setTranslateX(30);
+        closeButton.setTranslateY(-30);
+        header.getChildren().add(closeButton);
+
+        HBox toggleBar = new HBox(10);
+        toggleBar.setAlignment(Pos.CENTER);
+
+        musicBtnOn = new Button("ON");
+        musicBtnOn.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+        applyButtonEffects(musicBtnOn, false);
+        musicBtnOn.setOnAction(e -> {
+            musicStateSetter.accept(true);
+            updateMusicButtonStyles(true);
+        });
+
+        musicBtnOff = new Button("OFF");
+        musicBtnOff.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+        applyButtonEffects(musicBtnOff, false); // Áp dụng hiệu ứng phóng to
+        musicBtnOff.setOnAction(e -> {
+            musicStateSetter.accept(false);
+            updateMusicButtonStyles(false);
+        });
+        toggleBar.getChildren().addAll(musicBtnOn, musicBtnOff);
+        updateMusicButtonStyles(musicStateGetter.get());
+
+        settingsOverlay.getChildren().addAll(header, toggleBar);
+    }
+
+    private void updateMusicButtonStyles(boolean isMusicOn) {
+        if (isMusicOn) {
+            musicBtnOn.setStyle("-fx-background-color: #20C20E; -fx-text-fill: white; -fx-background-radius: 10;");
+            musicBtnOff.setStyle("-fx-background-color: #505050; -fx-text-fill: #A0A0A0; -fx-background-radius: 10; -fx-opacity: 0.7;");
+        } else {
+            musicBtnOn.setStyle("-fx-background-color: #505050; -fx-text-fill: #A0A0A0; -fx-background-radius: 10; -fx-opacity: 0.7;");
+            musicBtnOff.setStyle("-fx-background-color: #D41010; -fx-text-fill: white; -fx-background-radius: 10;");
+        }
     }
 
     private void showOverlay(VBox overlay) {
         mainButtonsVbox.setVisible(false);
         titleView.setVisible(false);
+
+        if (nameOverlay != null) nameOverlay.setVisible(false);
+        if (highScoreOverlay != null) highScoreOverlay.setVisible(false);
+        if (gameOveroverlay != null) gameOveroverlay.setVisible(false);
+
         overlay.setVisible(true);
+        overlay.toFront();
+
         FadeTransition ft = new FadeTransition(Duration.millis(300), overlay);
         ft.setFromValue(0.0);
         ft.setToValue(1.0);
@@ -292,8 +454,10 @@ public class MainMenuPane extends StackPane {
     }
 
     public MainMenuPane(Consumer<String> playAction,
+                        Runnable playAgainAction,
                         Supplier<List<String>> highScoreAction,
-                        EventHandler<ActionEvent> settingAction,
+                        Supplier<Boolean> musicStateGetter,
+                        Consumer<Boolean> musicStateSetter,
                         EventHandler<ActionEvent> quitAction) {
 
         /**
@@ -331,302 +495,25 @@ public class MainMenuPane extends StackPane {
             //phu lop name va highscore hien thi len tren
         createNameOverlay(playAction);
         createHighScoreOverlay(highScoreAction);
-            //them 2 overlay vap vbox
-        getChildren().addAll(nameOverlay, highScoreOverlay);
+        createGameOveroverlay(playAgainAction, highScoreAction);
+        createSettingsOverlay(musicStateGetter, musicStateSetter);
+            //them 2 overlay vao vbox
+        getChildren().addAll(nameOverlay, highScoreOverlay,gameOveroverlay, settingsOverlay);
 
         playButton.setOnAction(e -> showOverlay(nameOverlay));
         highScoreButton.setOnAction(e -> {
+            postHighScoreAction = null;
             updateHighScoreList(highScoreAction);
             showOverlay(highScoreOverlay);
         });
-        settingButton.setOnAction(settingAction);
+        settingButton.setOnAction(e -> {
+            updateMusicButtonStyles(musicStateGetter.get());
+            showOverlay(settingsOverlay);
+        });
         quitButton.setOnAction(quitAction);
     }
 }
 
 
-//        MediaView mediaView = null;
-//        try {
-//            String videoPath = getClass().getResource("/menu.mp4").toExternalForm();
-//            Media media = new Media(videoPath);
-//            MediaPlayer mediaPlayer = new MediaPlayer(media);
-//            mediaPlayer.setAutoPlay(true);
-//            mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
-//            mediaPlayer.setMute(true);
-//
-//            mediaView = new MediaView(mediaPlayer);
-//
-//            mediaView.fitWidthProperty().bind(widthProperty());
-//            mediaView.fitHeightProperty().bind(heightProperty());
-//            mediaView.setPreserveRatio(false);
-//        } catch (Exception ex) {
-//            System.out.println("Cannot load menu video");
-//        }
-//
-//        /**
-//         * Tạo vbox các button.
-//         */
-//        VBox mainButtonsVBox = new VBox(12);
-//        mainButtonsVBox.setAlignment(Pos.CENTER);
-//        Button play = createButton("Play", true);
-//        Button highScore = createButton("Highscore", true);
-//        Button setting = createButton("Setting", true);
-//        Button quit = createButton("Quit", true);
-//
-//        /**
-//         * Gắn hoạt động các button.
-//         */
-//        highScore.setOnAction(highScoreAction);
-//        setting.setOnAction(settingAction);
-//        quit.setOnAction(quitAction);
-//        mainButtonsVBox.getChildren().addAll(play, highScore, setting, quit);
-//
-//        /**
-//         * Tao title.
-//         */
-//        ImageView titleView = new ImageView();
-//        try {
-//            Image logoImg = new Image(getClass().getResourceAsStream("/textTitle.png"));
-//            titleView.setImage(logoImg);
-//        }
-//        catch (Exception e) {
-//            System.out.println("Không thể tải ảnh /textTitle.png");
-//        }
-//
-//        /**
-//         * Tạo overlay nhập usename.
-//         */
-//        VBox nameInputOverlay = new VBox(15);
-//        nameInputOverlay.setAlignment(Pos.CENTER);
-//        nameInputOverlay.setPadding(new Insets(15));
-//        nameInputOverlay.setStyle("-fx-background-color: rgba(0, 0, 0, 0.85); -fx-background-radius: 15; -fx-border-width: 2; -fx-border-radius: 15;");
-//        nameInputOverlay.setMaxSize(200, 200);
-//
-//        BorderPane headerPane = new BorderPane();
-//        /**
-//         * Overlay usename.
-//         */
-//        ImageView nameView = new ImageView();
-//        try {
-//            Image nameImg = new Image(getClass().getResourceAsStream("/Entername.png"));
-//            nameView.setImage(nameImg); // Chỉ 'set' ảnh
-//            nameView.setFitWidth(280);
-//            nameView.setPreserveRatio(true);
-//            headerPane.setCenter(nameView);
-//            BorderPane.setMargin(nameView, new Insets(0,0,0,20));
-//        }
-//        catch (Exception e) {
-//            System.out.println("Không thể tải ảnh /EnterName.png");
-//            Label nameLabel = new Label("Enter Your Name:");
-//            nameLabel.setStyle("-fx-text-fill: #00FFFF; -fx-font-size: 24px; -fx-font-weight: bold;");
-//            headerPane.setCenter(nameLabel);
-//        }
-//
-//        Button closeButton = new Button();
-//        try {
-//            Image xImg = new Image(getClass().getResourceAsStream("/X.png"));
-//            ImageView xImgView = new ImageView(xImg);
-//            xImgView.setFitWidth(50);  // Kích thước nút X (nhỏ thôi)
-//            xImgView.setFitHeight(30);
-//            xImgView.setPreserveRatio(true);
-//            closeButton.setGraphic(xImgView);
-//            closeButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;"); // Nút trong suốt
-//        } catch (Exception e) {
-//            closeButton.setText("X"); // Dự phòng nếu lỗi ảnh
-//            closeButton.setStyle("-fx-background-color: transparent; -fx-text-fill: red; -fx-font-size: 20px; -fx-font-weight: bold;");
-//        }
-//
-//        DropShadow xGlow = new DropShadow(10, Color.RED); // Sáng màu đỏ nhẹ
-//        closeButton.setOnMouseEntered(e -> {
-//            closeButton.setScaleX(1.2); // Phóng to lên 120%
-//            closeButton.setScaleY(1.2);
-//            closeButton.setEffect(xGlow);
-//            closeButton.setCursor(Cursor.HAND); // Đổi con trỏ thành hình bàn tay
-//        });
-//        closeButton.setOnMouseExited(e -> {
-//            closeButton.setScaleX(1.0);
-//            closeButton.setScaleY(1.0);
-//            closeButton.setEffect(null);
-//            closeButton.setCursor(Cursor.DEFAULT);
-//        });
-//        // Hành động nút X: Ẩn overlay
-//        closeButton.setOnAction(e -> {
-//            nameInputOverlay.setVisible(false);
-//            mainButtonsVBox.setVisible(true);
-//            titleView.setVisible(true);
-//        });
-//
-//        headerPane.setRight(closeButton);
-//
-//
-//        /**
-//         * Nhap ten.
-//         */
-//        TextField nameField = new TextField(); // Đã xóa "Player 1"
-//        nameField.setMaxWidth(280);
-//        nameField.setFont(Font.font("Verdana", 18));
-//        nameField.setAlignment(Pos.CENTER);
-//
-//        final String NORMAL_STYLE = "-fx-background-color: #FFFFFF; -fx-text-fill: #000000; -fx-border-color: #E0E0E0; -fx-border-width: 2; -fx-background-radius: 10; -fx-border-radius: 10;";
-//        final String ERROR_STYLE = "-fx-background-color: #FFFFFF; -fx-text-fill: #000000; -fx-border-color: RED; -fx-border-width: 2; -fx-background-radius: 10; -fx-border-radius: 10;";
-//        nameField.setStyle(NORMAL_STYLE);
-//
-//        Label errorLabel = new Label(""); // Ban đầu rỗng
-//        errorLabel.setTextFill(Color.RED); // Màu đỏ
-//        errorLabel.setFont(Font.font("Verdana", 12)); // Font nhỏ hơn chút
-//        errorLabel.setVisible(false);
-//
-//        Button okButton = createButton("OK", false);
-//
-//        Runnable checkNameAndStart = () -> {
-//            String name = nameField.getText().trim();
-//            errorLabel.setVisible(false);
-//            nameField.setStyle(NORMAL_STYLE);
-//
-//            if (name.isEmpty()) {
-//                errorLabel.setText("Name cannot be empty!");
-//                errorLabel.setVisible(true);
-//                nameField.setStyle(ERROR_STYLE);
-//                return;
-//            }
-//
-//            // 2. Kiểm tra ký tự đầu viết hoa
-//            if (!Character.isUpperCase(name.charAt(0))) {
-//                errorLabel.setText("First letter must be uppercase!");
-//                errorLabel.setVisible(true);
-//                nameField.setStyle(ERROR_STYLE);
-//                return;
-//            }
-//
-//            // 3. Kiểm tra có chứa số
-//            boolean hasDigit = false;
-//            for (char c : name.toCharArray()) {
-//                if (Character.isDigit(c)) {
-//                    hasDigit = true;
-//                    break;
-//                }
-//            }
-//            if (!hasDigit) {
-//                errorLabel.setText("Name must contain a number!");
-//                errorLabel.setVisible(true);
-//                nameField.setStyle(ERROR_STYLE);
-//                return;
-//            }
-//
-//            // Nếu HỢP LỆ
-//            playAction.accept(name); // Bắt đầu game
-//        };
-//
-//
-//        okButton.setOnAction(e -> checkNameAndStart.run());
-//        nameField.setOnKeyPressed(e -> {
-//            if (e.getCode() == KeyCode.ENTER) {
-//                checkNameAndStart.run();
-//            } else {
-//                // Khi người dùng gõ lại, xóa thông báo lỗi và trả lại viền xanh
-//                errorLabel.setVisible(false);
-//                nameField.setStyle(NORMAL_STYLE);
-//            }
-//        });
-//
-//        // Thêm tất cả vào Overlay
-//        nameInputOverlay.getChildren().addAll(headerPane, nameField, errorLabel, okButton);
-//        nameInputOverlay.setVisible(false);
-//
-//        /**
-//         * Action cua playAction.
-//         */
-//        play.setOnAction(event -> {
-//            mainButtonsVBox.setVisible(false);
-//            titleView.setVisible(false);
-//            nameInputOverlay.setVisible(true);
-//            nameField.setText("");
-//            errorLabel.setVisible(false);
-//            nameField.setStyle(NORMAL_STYLE); // Reset style khi mở overlay
-//            nameField.requestFocus();
-//        });
-//
-//        /**
-//         * Sap xep thu tu layer.
-//         */
-//        if (mediaView != null) {
-//            getChildren().addAll(mediaView, titleView, mainButtonsVBox, nameInputOverlay);
-//        } else {
-//            getChildren().addAll(titleView, mainButtonsVBox, nameInputOverlay);
-//            setStyle("-fx-background-color: #505064; ...");
-//        }
-//
-//        StackPane.setAlignment(titleView, Pos.TOP_CENTER); //can le title
-//        StackPane.setMargin(titleView, new Insets(50, 0, 0, 0));
-//
-//        StackPane.setAlignment(mainButtonsVBox, Pos.BOTTOM_CENTER); //can le mainButton
-//        StackPane.setMargin(mainButtonsVBox, new Insets(350,0,20,0));
-//
-//        StackPane.setAlignment(nameInputOverlay, Pos.CENTER); //can le overlay usename
-//    }
-//
-//    /**
-//     * Hàm chung để tạo các nút bằng ảnh
-//     * @param baseName Tên file ảnh (ví dụ: "Play" -> sẽ tải "/Play.png")
-//     * @param withGlow true = thêm hiệu ứng phát sáng; false = chỉ phóng to
-//     */
-//    private Button createButton(String baseName, boolean withGlow) {
-//        Button b = new Button();
-//        try {
-//            String imagePath = "/" + baseName + ".png";
-//            Image img = new Image(getClass().getResourceAsStream(imagePath));
-//            ImageView imgView = new ImageView(img);
-//            imgView.setFitWidth(190);
-//            imgView.setPreserveRatio(true);
-//            b.setGraphic(imgView);
-//            b.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
-//        }
-//        catch (Exception e) {
-//            System.out.println("Không thể tải ảnh: " + baseName);
-//            b.setText(baseName.toUpperCase());
-//        }
-//        /**
-//         * Tao effect.
-//         */
-//        DropShadow glow = null;
-//        if (withGlow) {
-//            glow = new DropShadow();
-//            glow.setColor(Color.WHITE);
-//            glow.setRadius(25);
-//            glow.setSpread(0.25);
-//        }
-//
-//        final DropShadow finalGlow = glow;
-//        //dieu khien chuot
-//        b.setOnMouseEntered(event -> {
-//            if (withGlow) {
-//                b.setEffect(finalGlow);
-//            }
-//            b.setScaleX(1.15);
-//            b.setScaleY(1.15);
-//        });
-//        b.setOnMouseExited(event -> {
-//            if (withGlow) {
-//                b.setEffect(null);
-//            }
-//            b.setScaleX(1.0);
-//            b.setScaleY(1.0);
-//        });
-//        b.setOnMousePressed(event -> {
-//            b.setScaleX(1.05);
-//            b.setScaleY(1.05);
-//        });
-//        b.setOnMouseReleased(event -> {
-//            if (b.isHover()) {
-//                b.setScaleX(1.15);
-//                b.setScaleY(1.15);
-//            } else {
-//                b.setScaleX(1.0);
-//                b.setScaleY(1.0);
-//            }
-//        });
-//        return b;
-//    }
-//}
 
 

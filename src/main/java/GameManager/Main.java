@@ -8,6 +8,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 
 import java.io.*;
@@ -44,6 +45,8 @@ public class Main extends Application {
     private GamePanel gamePanel;
     private String playerName;
     private List<ScoreEntry> highScores = new ArrayList<>();
+    private MediaPlayer backgroundMusicPlayer;
+    private boolean isMusicOn = true;
 
     public static void main(String[] args) {
         launch(args);
@@ -56,34 +59,52 @@ public class Main extends Application {
 
         menuPane = new MainMenuPane(
                 this::startGame,
+                this::playAgain,
                 this::getFormattedHighScores,
-                (ActionEvent e) -> showSettings(),
+                () -> this.isMusicOn,
+                this::toggleMusic,
                 (ActionEvent e) -> quitGame()
         );
 
+        this.backgroundMusicPlayer = menuPane.getBackgroundMusicPlayer();
+        toggleMusic(this.isMusicOn);
+
         scene = new Scene(menuPane, GamePanel.WIDTH, GamePanel.HEIGHT);
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Arkanoid Game");
         primaryStage.setResizable(false);
         primaryStage.show();
     }
 
+    public void toggleMusic(boolean on) {
+        this.isMusicOn = on;
+        if (backgroundMusicPlayer != null) {
+            backgroundMusicPlayer.setMute(!on);
+        }
+    }
+
+
     private void startGame(String playerName) {
         this.playerName = playerName;
-        if (gamePanel == null) {
-            gamePanel = new GamePanel();
+        launchGame();
+    }
+
+    private void playAgain() {
+        if (this.playerName == null || this.playerName.isEmpty()) {
+            this.playerName = "Player1";
         }
+        launchGame();
+    }
+
+    private void launchGame() {
+        if (gamePanel == null) gamePanel = new GamePanel();
         scene.setRoot(gamePanel);
         gamePanel.requestFocus();
 
         this.gameManager = new GameManager(
-                GamePanel.WIDTH,
-                GamePanel.HEIGHT,
-                gamePanel,
-                new Ball(400, 300, 10),
-                new Paddle(350, 550, 100, 20),
-                playerName,
-                (score) -> handleGameOver(score)
+                GamePanel.WIDTH, GamePanel.HEIGHT, gamePanel,
+                new Ball(400, 300, 10), new Paddle(350, 550, 100, 20),
+                this.playerName,
+                this::handleGameOver
         );
         gamePanel.setGameManager(gameManager);
         gameManager.buildLevel();
@@ -100,7 +121,7 @@ public class Main extends Application {
 
         Platform.runLater(() -> {
             scene.setRoot(menuPane);
-            menuPane.showHighScoreOverlay();
+            menuPane.showGameOver(this.playerName, score);
         });
     }
 
@@ -143,12 +164,7 @@ public class Main extends Application {
     }
 
     private void showSettings() {
-        Alert alert = new Alert(AlertType.INFORMATION);
-        alert.initOwner(primaryStage);
-        alert.setTitle("Settings");
-        alert.setHeaderText("Game Settings");
-        alert.setContentText("Features coming soon:\n- Sound Volume\n- Difficulty Level\n- Custom Controls");
-        alert.showAndWait();
+        System.out.println("Nút Cài đặt được xử lý trong MainMenuPane.");
     }
 
     private void quitGame() {
