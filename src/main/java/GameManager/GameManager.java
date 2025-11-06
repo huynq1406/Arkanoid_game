@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 public class GameManager {
     private final int width;
@@ -27,7 +28,7 @@ public class GameManager {
     private final Ball ball;
     private final Paddle paddle;
     private String playerName;
-    private List<Entities.PowerUp.PowerUp> powerUps = new ArrayList<>();
+    private final Consumer<Integer> onGameOver;
 
     private BallManager ballManager = new BallManager();
     private PowerUpManager powerUpManager = new PowerUpManager();
@@ -47,13 +48,14 @@ public class GameManager {
 
     private enum CollisionSide { NONE, LEFT, RIGHT, TOP, BOTTOM }
 
-    public GameManager(int width, int height, GamePanel panel, Ball ball, Paddle paddle, String playerName) {
+    public GameManager(int width, int height, GamePanel panel, Ball ball, Paddle paddle, String playerName, Consumer<Integer> onGameOver) {
         this.width = width;
         this.height = height;
         this.panel  = panel;
         this.ball   = ball;
         this.paddle = paddle;
         this.playerName = playerName;
+        this.onGameOver = onGameOver;
 
         // try to load explosion image from resources (/images/explosion.png)
         InputStream is = getClass().getResourceAsStream("/images/explosion.png");
@@ -357,8 +359,11 @@ public class GameManager {
         } else {
             gameOver = true;
             loop.stop(); // Dừng vòng lặp
-            panel.showGameOver();
+//            panel.showGameOver();
             // Nếu bạn có giao diện GameOver thì gọi panel.showGameOver();
+            if (onGameOver != null) { //goi ve main bao diem
+                onGameOver.accept(this.score);
+                }
         }
     }
 
