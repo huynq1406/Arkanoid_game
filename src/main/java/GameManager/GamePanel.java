@@ -93,7 +93,7 @@ public class GamePanel extends Pane {
         if (ball   != null) {
             // keep existing API: ball.drawBall(g, ball) or adapt to ball.draw(g)
             try {
-                ball.render(g, ball);
+                ball.render(g);
             } catch (Throwable t) {
                 // fallback basic draw using position/size if drawBall not present
                 g.setFill(Color.WHITE);

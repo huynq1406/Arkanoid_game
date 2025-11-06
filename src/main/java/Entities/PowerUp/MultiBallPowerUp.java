@@ -1,27 +1,29 @@
 package Entities.PowerUp;
 
 import Entities.Ball;
+import ObjectManager.BallManager;
 
 import java.util.List;
 
 public class MultiBallPowerUp extends PowerUp implements IPowerUp {
-    private final List<Ball> balls;
+    private final List<Ball> referenceBalls;
+    private BallManager ballManager;
 
-    public MultiBallPowerUp(float x, float y, List<Ball> balls) {
+    public MultiBallPowerUp(float x, float y, List<Ball> referenceBalls, BallManager ballManager) {
         super(x, y, 3, "/mbPW.png");
-        this.balls = balls;
-        this.active = false;
+        this.referenceBalls = referenceBalls;
+        this.ballManager = ballManager;
     }
 
     @Override
     public void activate() {
-        if (balls == null || balls.isEmpty()) return;
-        Ball original = balls.get(0);
+        if (referenceBalls == null || referenceBalls.isEmpty()) return;
+        Ball original = referenceBalls.get(0);
         Ball newBall = new Ball((int) original.getX(), (int) original.getY(), original.getWidth() / 2);
         newBall.setSpeed(original.getSpeed());
         newBall.setDirection(-original.getDirX(), original.getDirY());
         newBall.launch();
-        balls.add(newBall);
+        referenceBalls.add(newBall);
         active = true;
         for (Ball originalBall : referenceBalls) {
             // Tạo 2 bóng mới với hướng khác nhau

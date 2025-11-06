@@ -81,9 +81,9 @@ public class Ball extends MovableObject {
 
     public void bounceY() { setDirection(dirX, -dirY); }
 
-    public void render(GraphicsContext g, Ball b) {
+    public void render(GraphicsContext g) {
         g.setFill(Color.WHITE);
-        int d = b.getDiameter();
-        g.fillOval(b.getX(), b.getY(), d, d);
+        int d = this.getDiameter();
+        g.fillOval(this.getX(), this.getY(), d, d);
     }
 }
