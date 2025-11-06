@@ -35,9 +35,10 @@ public class MainMenuPane extends StackPane {
     private final ImageView titleView;
     private VBox nameOverlay;
     private VBox highScoreOverlay;
-    private VBox gameOverlay;
+    private VBox gameOveroverlay;
     private Label gameOverScoreLabel;
     private final Button highScoreButton;
+    private Runnable postHighScoreAction = null; //bien luu hanh dong khi dong highscore
 
     private MediaView createBackgroundVideo() {
         try {
@@ -85,35 +86,61 @@ public class MainMenuPane extends StackPane {
         return button;
     }
 
-//    private void createGameOveroverlay(Runnable playAgainAction, Consumer<VBox> showOverlayFunc) {
-//        gameOverlay = createBaseOverlay(300, 350);
-//        gameOverlay.setSpacing(20);
-//
-//        ImageView gameOverImg = new ImageView();
-//        try {
-//            // Đảm bảo bạn có file GameOver.png
-//            gameOverImg.setImage(new Image(getClass().getResourceAsStream("/GameOver.png")));
-//            gameOverImg.setFitWidth(250);
-//            gameOverImg.setPreserveRatio(true);
-//        } catch (Exception e) {
-//            Label lbl = new Label("GAMEOVER");
-//            lbl.setTextFill(Color.WHITE);
-//            lbl.setFont(Font.font("Verdana", 24));
-//        }
-//
-//        gameOverScoreLabel = new Label("Player: ...\nScore: ...");
-//        gameOverScoreLabel.setTextFill(Color.WHITE);
-//        gameOverScoreLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 18));
-//        gameOverScoreLabel.setStyle("-fx-text-alignment: center;");
-//
-//        Button playAgainButton = createMenuButton("PlayAgain", true); // Đảm bảo có PlayAgain.png
-//        playAgainButton.setOnAction(e -> {
-//            hideOverlay(gameOverlay);
-//            playAgainAction.run();
-//        });
-//
-//    }
+    private void createGameOveroverlay(Runnable playAgainAction, Supplier<List<String>> highScoreAction) {
+        gameOveroverlay = createBaseOverlay(250, 100);
+        gameOveroverlay.setSpacing(20);
 
+        DropShadow blueGlow = new DropShadow();
+        blueGlow.setColor(Color.CORNFLOWERBLUE);
+        blueGlow.setRadius(30);
+        blueGlow.setSpread(0.5);
+
+        ImageView gameOverImg = new ImageView();
+        try {
+            gameOverImg.setImage(new Image(getClass().getResourceAsStream("/Gameover.png")));
+            if (gameOverImg!= null) gameOverImg.setFitWidth(250);
+            VBox.setMargin(gameOverImg, new Insets(20, 0, 0, 0));
+            gameOverImg.setPreserveRatio(true);
+            gameOverImg.setEffect(blueGlow);
+        } catch (Exception e) {
+            Label lbl = new Label("GAMEOVER");
+            lbl.setTextFill(Color.WHITE);
+            lbl.setFont(Font.font("Verdana", 24));
+        }
+
+        gameOverScoreLabel = new Label();
+        gameOverScoreLabel.setTextFill(Color.WHITE);
+        gameOverScoreLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 18));
+        gameOverScoreLabel.setStyle("-fx-text-alignment: center;");
+
+        Button playAgainButton = createMenuButton("PlayAgain", true);
+        ImageView playAgainImg = (ImageView) playAgainButton.getGraphic();
+        if (playAgainImg != null) playAgainImg.setFitWidth(250);
+        VBox.setMargin(playAgainButton, new Insets(0, 0, 0, 0));
+
+        playAgainButton.setOnAction(e -> {
+            postHighScoreAction = playAgainAction;
+            updateHighScoreList(highScoreAction);
+            showOverlay(highScoreOverlay);
+        });
+
+        Button menuButton = createMenuButton("Menu", true);
+        ImageView menuImg = (ImageView) menuButton.getGraphic();
+        if (menuImg != null) menuImg.setFitWidth(165);
+
+        VBox.setMargin(menuButton, new Insets(0, 0, 0, 0));
+        menuButton.setOnAction(e -> {
+            postHighScoreAction = null;
+            updateHighScoreList(highScoreAction);
+            showOverlay(highScoreOverlay);
+        });
+        gameOveroverlay.getChildren().addAll(gameOverImg, gameOverScoreLabel, playAgainButton, menuButton);
+    }
+
+    public void showGameOver(String playerName, int score) {
+        gameOverScoreLabel.setText(playerName.toUpperCase() + "\nSCORE: " + score);
+        showOverlay(gameOveroverlay);
+    }
 
     private void createNameOverlay(Consumer<String> playAction) {
         nameOverlay = createBaseOverlay(300,250);
@@ -156,7 +183,6 @@ public class MainMenuPane extends StackPane {
             okImg.setFitWidth(220);
         }
         VBox.setMargin(okButton, new Insets(10, 0, 0, 0));
-
         Runnable submitAction = () -> {
             String name = nameField.getText().trim();
             if (validateName(name, errorLabel, nameField)) {
@@ -188,7 +214,7 @@ public class MainMenuPane extends StackPane {
             imgHighScore.setPreserveRatio(true);
 
             DropShadow blueGlow = new DropShadow();
-            blueGlow.setColor(Color.CYAN);
+            blueGlow.setColor(Color.CORNFLOWERBLUE);
             blueGlow.setRadius(25);
             blueGlow.setSpread(0.4);
             imgHighScore.setEffect(blueGlow);
@@ -197,7 +223,7 @@ public class MainMenuPane extends StackPane {
         } catch (Exception e) {
             Label fallbackTitle = new Label("HIGH SCORES");
             fallbackTitle.setFont(Font.font("Verdana", FontWeight.BOLD, 28));
-            fallbackTitle.setTextFill(Color.GOLD);
+            fallbackTitle.setTextFill(Color.CORNFLOWERBLUE);
             fallbackTitle.setEffect(new DropShadow(10, Color.CYAN));
             header.setCenter(fallbackTitle);
         }
@@ -243,14 +269,30 @@ public class MainMenuPane extends StackPane {
             xButton.setScaleY(1.0);
             xButton.setCursor(Cursor.DEFAULT);
         });
-        xButton.setOnAction(e -> hideOverlay(targetOverlay));
+        xButton.setOnAction(e -> {
+
+            if (targetOverlay == highScoreOverlay && postHighScoreAction != null) {
+                targetOverlay.setVisible(false);
+                postHighScoreAction.run();
+                postHighScoreAction = null;
+            } else {
+                hideOverlay(targetOverlay);
+            }
+        });
         return xButton;
     }
 
     private void showOverlay(VBox overlay) {
         mainButtonsVbox.setVisible(false);
         titleView.setVisible(false);
+
+        if (nameOverlay != null) nameOverlay.setVisible(false);
+        if (highScoreOverlay != null) highScoreOverlay.setVisible(false);
+        if (gameOveroverlay != null) gameOveroverlay.setVisible(false);
+
         overlay.setVisible(true);
+        overlay.toFront();
+
         FadeTransition ft = new FadeTransition(Duration.millis(300), overlay);
         ft.setFromValue(0.0);
         ft.setToValue(1.0);
@@ -338,6 +380,7 @@ public class MainMenuPane extends StackPane {
     }
 
     public MainMenuPane(Consumer<String> playAction,
+                        Runnable playAgainAction,
                         Supplier<List<String>> highScoreAction,
                         EventHandler<ActionEvent> settingAction,
                         EventHandler<ActionEvent> quitAction) {
@@ -377,11 +420,13 @@ public class MainMenuPane extends StackPane {
             //phu lop name va highscore hien thi len tren
         createNameOverlay(playAction);
         createHighScoreOverlay(highScoreAction);
-            //them 2 overlay vap vbox
-        getChildren().addAll(nameOverlay, highScoreOverlay);
+        createGameOveroverlay(playAgainAction, highScoreAction);
+            //them 2 overlay vao vbox
+        getChildren().addAll(nameOverlay, highScoreOverlay,gameOveroverlay);
 
         playButton.setOnAction(e -> showOverlay(nameOverlay));
         highScoreButton.setOnAction(e -> {
+            postHighScoreAction = null;
             updateHighScoreList(highScoreAction);
             showOverlay(highScoreOverlay);
         });

@@ -213,6 +213,7 @@ public class Main extends Application {
 
         menuPane = new MainMenuPane(
                 this::startGame,
+                this::playAgain,
                 this::getFormattedHighScores,
                 (ActionEvent e) -> showSettings(),
                 (ActionEvent e) -> quitGame()
@@ -220,27 +221,33 @@ public class Main extends Application {
 
         scene = new Scene(menuPane, GamePanel.WIDTH, GamePanel.HEIGHT);
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Arkanoid Game");
         primaryStage.setResizable(false);
         primaryStage.show();
     }
 
     private void startGame(String playerName) {
         this.playerName = playerName;
-        if (gamePanel == null) {
-            gamePanel = new GamePanel();
+        launchGame();
+    }
+
+    // Chơi lại với tên hiện tại (từ màn hình Game Over)
+    private void playAgain() {
+        if (this.playerName == null || this.playerName.isEmpty()) {
+            this.playerName = "Player1"; // Fallback nếu chưa có tên
         }
+        launchGame();
+    }
+
+    private void launchGame() {
+        if (gamePanel == null) gamePanel = new GamePanel();
         scene.setRoot(gamePanel);
         gamePanel.requestFocus();
 
         this.gameManager = new GameManager(
-                GamePanel.WIDTH,
-                GamePanel.HEIGHT,
-                gamePanel,
-                new Ball(400, 300, 10),
-                new Paddle(350, 550, 100, 20),
-                playerName,
-                (score) -> handleGameOver(score)
+                GamePanel.WIDTH, GamePanel.HEIGHT, gamePanel,
+                new Ball(400, 300, 10), new Paddle(350, 550, 100, 20),
+                this.playerName,
+                this::handleGameOver
         );
         gamePanel.setGameManager(gameManager);
         gameManager.buildLevel();
@@ -257,7 +264,7 @@ public class Main extends Application {
 
         Platform.runLater(() -> {
             scene.setRoot(menuPane);
-            menuPane.showHighScoreOverlay();
+            menuPane.showGameOver(this.playerName, score);
         });
     }
 
