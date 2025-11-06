@@ -13,6 +13,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.Media;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -29,6 +31,8 @@ public class GameManager {
     private final Paddle paddle;
     private String playerName;
     private final Consumer<Integer> onGameOver;
+    private MediaPlayer backgroundMusicPlayer;
+    private Media backgroundMedia;
 
     private BallManager ballManager = new BallManager();
     private PowerUpManager powerUpManager = new PowerUpManager();
@@ -70,6 +74,7 @@ public class GameManager {
         } else {
             explosionImage = null;
         }
+        loadBackgroundMusic("/audio/space.mp3");
     }
 
     public void buildLevel() {
@@ -85,7 +90,7 @@ public class GameManager {
             // Xử lý nếu không tìm thấy level (hết level)
             gameOver = true;
             loop.stop();
-            panel.showGameOver();  // Hoặc hiển thị "You Win!" nếu muốn
+//            panel.showGameOver();  // Hoặc hiển thị "You Win!" nếu muốn
             System.out.println("No more levels: " + e.getMessage());
         }
     }
@@ -107,6 +112,7 @@ public class GameManager {
             }
         };
         loop.start();
+        startMusic();
     }
 
     public void onMouseMove(double mouseX) {
@@ -256,11 +262,12 @@ public class GameManager {
 
             if (destroyedNow) {
                 // spawn explosion effect at brick's position
+                playSound("/audio/hitbrick.wav");
                 effects.add(new ExplosionEffect(brick.getX(), brick.getY(), 30, explosionImage));
 
                 // Thêm xác suất rơi power-up khi gạch bị phá
                 double rand = Math.random();
-                if (rand < 1 ) {
+                if (rand < 0.3) { // 30% chance to drop a power-up
                     PowerUp powerUp;
                     double powerupRand = Math.random();
 
@@ -281,6 +288,7 @@ public class GameManager {
                 double newSpeed = Math.min(420, ball.getSpeed() * 1.02);
                 ball.setSpeed(newSpeed);
             } else if (brick instanceof ExplosiveBrick) {
+                playSound("/audio/explode.ogg");
                 ((ExplosiveBrick)brick).takeHit(bricks);
             }
         }
@@ -362,6 +370,7 @@ public class GameManager {
         } else {
             gameOver = true;
             loop.stop(); // Dừng vòng lặp
+            stopMusic();
 //            panel.showGameOver();
             // Nếu bạn có giao diện GameOver thì gọi panel.showGameOver();
             if (onGameOver != null) { //goi ve main bao diem
@@ -419,6 +428,50 @@ public class GameManager {
 
         boolean isFinished() {
             return timer >= duration;
+        }
+    }
+
+    private void playSound(String audioPath) {
+        try {
+            Media sound = new Media(getClass().getResource(audioPath).toExternalForm());
+            MediaPlayer mediaPlayer = new MediaPlayer(sound);
+            mediaPlayer.setVolume(0.8);
+            mediaPlayer.play();
+
+            mediaPlayer.setOnEndOfMedia(() -> mediaPlayer.dispose());
+
+        } catch (Exception e) {
+            System.err.println("Không thể tải hiệu ứng âm thanh: " + audioPath);
+        }
+    }
+
+    private void loadBackgroundMusic(String audioPath) {
+        try {
+            Media sound = new Media(getClass().getResource(audioPath).toExternalForm());
+            backgroundMusicPlayer = new MediaPlayer(sound);
+
+            backgroundMusicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+
+            backgroundMusicPlayer.setVolume(0.5);
+            backgroundMedia = new Media(getClass().getResource(audioPath).toExternalForm());
+            backgroundMusicPlayer = new MediaPlayer(backgroundMedia);
+
+            backgroundMusicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+            backgroundMusicPlayer.setVolume(0.5);
+        } catch (Exception e) {
+        System.err.println("Không thể tải nhạc nền: " + audioPath + ". Lỗi: " + e.getMessage());
+    }
+    }
+
+    public void startMusic() {
+        if (backgroundMusicPlayer != null) {
+            backgroundMusicPlayer.play();
+        }
+    }
+
+    public void stopMusic() {
+        if (backgroundMusicPlayer != null) {
+            backgroundMusicPlayer.stop();
         }
     }
 }
