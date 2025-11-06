@@ -19,11 +19,11 @@ public class MultiBallPowerUp extends PowerUp implements IPowerUp {
     public void activate() {
         if (referenceBalls == null || referenceBalls.isEmpty()) return;
         Ball original = referenceBalls.get(0);
-        Ball newBall = new Ball((int) original.getX(), (int) original.getY(), original.getWidth() / 2);
-        newBall.setSpeed(original.getSpeed());
-        newBall.setDirection(-original.getDirX(), original.getDirY());
-        newBall.launch();
-        referenceBalls.add(newBall);
+//        Ball newBall = new Ball((int) original.getX(), (int) original.getY(), original.getWidth() / 2);
+//        newBall.setSpeed(original.getSpeed());
+//        newBall.setDirection(-original.getDirX(), original.getDirY());
+//        newBall.launch();
+//        referenceBalls.add(newBall);
         active = true;
         for (Ball originalBall : referenceBalls) {
             // Tạo 2 bóng mới với hướng khác nhau
