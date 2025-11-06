@@ -5,11 +5,11 @@ import ObjectManager.BallManager;
 
 import java.util.List;
 
-public class MultiBallPowerUp extends PowerUp implements IPowerUp {
+public class MultiBallPowerUp extends PowerUp  {
     private final List<Ball> referenceBalls;
     private BallManager ballManager;
 
-    public MultiBallPowerUp(float x, float y, List<Ball> referenceBalls, BallManager ballManager) {
+    public MultiBallPowerUp(double x, double y, List<Ball> referenceBalls, BallManager ballManager) {
         super(x, y, 3, "/mbPW.png");
         this.referenceBalls = referenceBalls;
         this.ballManager = ballManager;

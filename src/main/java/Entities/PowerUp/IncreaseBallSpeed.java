@@ -2,7 +2,7 @@ package Entities.PowerUp;
 
 import Entities.Ball;
 
-public class IncreaseBallSpeed extends PowerUp implements IPowerUp {
+public class IncreaseBallSpeed extends PowerUp  {
     private final Ball ball;
     private final double speedMultiplier = 1.5;
 

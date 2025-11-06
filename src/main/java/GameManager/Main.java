@@ -48,6 +48,7 @@ public class Main extends Application {
     private List<ScoreEntry> highScores = new ArrayList<>();
     private MediaPlayer backgroundMusicPlayer;
     private boolean isMusicOn = true;
+    private GameHUD gameHUD;
 
     public static void main(String[] args) {
         launch(args);
@@ -109,7 +110,8 @@ public class Main extends Application {
                 GamePanel.WIDTH, GamePanel.HEIGHT, gamePanel,
                 new Ball(400, 300, 10), new Paddle(350, 550, 100, 20),
                 this.playerName,
-                this::handleGameOver
+                this::handleGameOver,
+                this.gameHUD
         );
         gamePanel.setGameManager(gameManager);
         gameManager.buildLevel();
