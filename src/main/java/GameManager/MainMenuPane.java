@@ -15,6 +15,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
@@ -36,9 +37,15 @@ public class MainMenuPane extends StackPane {
     private VBox nameOverlay;
     private VBox highScoreOverlay;
     private VBox gameOveroverlay;
+    private VBox settingsOverlay;
+
     private Label gameOverScoreLabel;
     private final Button highScoreButton;
     private Runnable postHighScoreAction = null; //bien luu hanh dong khi dong highscore
+
+    private MediaPlayer mediaPlayer;
+    private Button musicBtnOn;
+    private Button musicBtnOff;
 
     private MediaView createBackgroundVideo() {
         try {
@@ -57,6 +64,10 @@ public class MainMenuPane extends StackPane {
             System.out.println("Không thể tải video menu: " + ex.getMessage());
             return null;
         }
+    }
+
+    public MediaPlayer getBackgroundMusicPlayer() {
+        return this.mediaPlayer;
     }
 
     private ImageView createTitileView() {
@@ -282,6 +293,69 @@ public class MainMenuPane extends StackPane {
         return xButton;
     }
 
+    private void createSettingsOverlay(Supplier<Boolean> musicStateGetter, Consumer<Boolean> musicStateSetter) {
+        settingsOverlay = createBaseOverlay(300, 250);
+        settingsOverlay.setSpacing(20);
+
+        StackPane header = new StackPane();
+        header.setAlignment(Pos.CENTER);
+        ImageView musictitle = new ImageView();
+        try {
+            musictitle.setImage(new Image(getClass().getResourceAsStream("/Music.png")));
+            musictitle.setFitWidth(200);
+            musictitle.setPreserveRatio(true);
+            DropShadow blueGlow = new DropShadow();
+            blueGlow.setColor(Color.CORNFLOWERBLUE); // Hoặc Color.CYAN tùy bạn chọn
+            blueGlow.setRadius(20);
+            blueGlow.setSpread(0.4);
+            musictitle.setEffect(blueGlow);
+            header.getChildren().add(musictitle);
+        } catch (Exception e) {
+            Label lbl = new Label("MUSIC");
+            lbl.setTextFill(Color.CYAN);
+            lbl.setFont(Font.font("Verdana", FontWeight.BOLD, 26));
+            header.getChildren().add(lbl);
+        }
+        Button closeButton = createCloseButton(settingsOverlay);
+        StackPane.setAlignment(closeButton, Pos.TOP_RIGHT);
+        closeButton.setTranslateX(30);
+        closeButton.setTranslateY(-30);
+        header.getChildren().add(closeButton);
+
+        HBox toggleBar = new HBox(10);
+        toggleBar.setAlignment(Pos.CENTER);
+
+        musicBtnOn = new Button("ON");
+        musicBtnOn.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+        applyButtonEffects(musicBtnOn, false);
+        musicBtnOn.setOnAction(e -> {
+            musicStateSetter.accept(true);
+            updateMusicButtonStyles(true);
+        });
+
+        musicBtnOff = new Button("OFF");
+        musicBtnOff.setFont(Font.font("Verdana", FontWeight.BOLD, 24));
+        applyButtonEffects(musicBtnOff, false); // Áp dụng hiệu ứng phóng to
+        musicBtnOff.setOnAction(e -> {
+            musicStateSetter.accept(false);
+            updateMusicButtonStyles(false);
+        });
+        toggleBar.getChildren().addAll(musicBtnOn, musicBtnOff);
+        updateMusicButtonStyles(musicStateGetter.get());
+
+        settingsOverlay.getChildren().addAll(header, toggleBar);
+    }
+
+    private void updateMusicButtonStyles(boolean isMusicOn) {
+        if (isMusicOn) {
+            musicBtnOn.setStyle("-fx-background-color: #20C20E; -fx-text-fill: white; -fx-background-radius: 10;");
+            musicBtnOff.setStyle("-fx-background-color: #505050; -fx-text-fill: #A0A0A0; -fx-background-radius: 10; -fx-opacity: 0.7;");
+        } else {
+            musicBtnOn.setStyle("-fx-background-color: #505050; -fx-text-fill: #A0A0A0; -fx-background-radius: 10; -fx-opacity: 0.7;");
+            musicBtnOff.setStyle("-fx-background-color: #D41010; -fx-text-fill: white; -fx-background-radius: 10;");
+        }
+    }
+
     private void showOverlay(VBox overlay) {
         mainButtonsVbox.setVisible(false);
         titleView.setVisible(false);
@@ -382,7 +456,8 @@ public class MainMenuPane extends StackPane {
     public MainMenuPane(Consumer<String> playAction,
                         Runnable playAgainAction,
                         Supplier<List<String>> highScoreAction,
-                        EventHandler<ActionEvent> settingAction,
+                        Supplier<Boolean> musicStateGetter,
+                        Consumer<Boolean> musicStateSetter,
                         EventHandler<ActionEvent> quitAction) {
 
         /**
@@ -421,8 +496,9 @@ public class MainMenuPane extends StackPane {
         createNameOverlay(playAction);
         createHighScoreOverlay(highScoreAction);
         createGameOveroverlay(playAgainAction, highScoreAction);
+        createSettingsOverlay(musicStateGetter, musicStateSetter);
             //them 2 overlay vao vbox
-        getChildren().addAll(nameOverlay, highScoreOverlay,gameOveroverlay);
+        getChildren().addAll(nameOverlay, highScoreOverlay,gameOveroverlay, settingsOverlay);
 
         playButton.setOnAction(e -> showOverlay(nameOverlay));
         highScoreButton.setOnAction(e -> {
@@ -430,7 +506,10 @@ public class MainMenuPane extends StackPane {
             updateHighScoreList(highScoreAction);
             showOverlay(highScoreOverlay);
         });
-        settingButton.setOnAction(settingAction);
+        settingButton.setOnAction(e -> {
+            updateMusicButtonStyles(musicStateGetter.get());
+            showOverlay(settingsOverlay);
+        });
         quitButton.setOnAction(quitAction);
     }
 }

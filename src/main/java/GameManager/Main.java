@@ -165,6 +165,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 
 import java.io.*;
@@ -201,6 +202,8 @@ public class Main extends Application {
     private GamePanel gamePanel;
     private String playerName;
     private List<ScoreEntry> highScores = new ArrayList<>();
+    private MediaPlayer backgroundMusicPlayer;
+    private boolean isMusicOn = true;
 
     public static void main(String[] args) {
         launch(args);
@@ -215,9 +218,13 @@ public class Main extends Application {
                 this::startGame,
                 this::playAgain,
                 this::getFormattedHighScores,
-                (ActionEvent e) -> showSettings(),
+                () -> this.isMusicOn,
+                this::toggleMusic,
                 (ActionEvent e) -> quitGame()
         );
+
+        this.backgroundMusicPlayer = menuPane.getBackgroundMusicPlayer();
+        toggleMusic(this.isMusicOn);
 
         scene = new Scene(menuPane, GamePanel.WIDTH, GamePanel.HEIGHT);
         primaryStage.setScene(scene);
@@ -225,15 +232,22 @@ public class Main extends Application {
         primaryStage.show();
     }
 
+    public void toggleMusic(boolean on) {
+        this.isMusicOn = on;
+        if (backgroundMusicPlayer != null) {
+            backgroundMusicPlayer.setMute(!on);
+        }
+    }
+
+
     private void startGame(String playerName) {
         this.playerName = playerName;
         launchGame();
     }
 
-    // Chơi lại với tên hiện tại (từ màn hình Game Over)
     private void playAgain() {
         if (this.playerName == null || this.playerName.isEmpty()) {
-            this.playerName = "Player1"; // Fallback nếu chưa có tên
+            this.playerName = "Player1";
         }
         launchGame();
     }
@@ -307,12 +321,7 @@ public class Main extends Application {
     }
 
     private void showSettings() {
-        Alert alert = new Alert(AlertType.INFORMATION);
-        alert.initOwner(primaryStage);
-        alert.setTitle("Settings");
-        alert.setHeaderText("Game Settings");
-        alert.setContentText("Features coming soon:\n- Sound Volume\n- Difficulty Level\n- Custom Controls");
-        alert.showAndWait();
+        System.out.println("Nút Cài đặt được xử lý trong MainMenuPane.");
     }
 
     private void quitGame() {
