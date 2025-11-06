@@ -6,13 +6,13 @@ import ObjectManager.MovableObject;
 
 public class Paddle extends MovableObject {
 
-    public Paddle(int x, int y, int width, int height) {
+    public Paddle(double x, double y, int width, int height) {
         super(x, y, width, height);
         this.dx = 0;
         this.dy = 0;
     }
 
-    public void setCenterX(int mouseX) {
+    public void setCenterX(double mouseX) {
         this.x = mouseX - width / 2;
     }
 

@@ -7,7 +7,7 @@ import javafx.scene.paint.Color;
 import Entities.*;
 
 public class IndestructibleBrick extends AbstractBrick {
-    public IndestructibleBrick(int x, int y, int width, int height) {
+    public IndestructibleBrick(double x, double y, int width, int height) {
         super(x, y, width, height);
     }
 

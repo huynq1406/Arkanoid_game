@@ -4,13 +4,13 @@ public class MovableObject extends GameObject {
     protected double dx;
     protected double dy;
 
-    public MovableObject(int x, int y, int width, int height) {
-        super(x,y,width,height);
+    public MovableObject(double x, double y, int width, int height) {
+        super(x, y, width, height);
     }
 
     protected void updatePosition(double dt) {
-        x += (int) Math.round(dx * dt);
-        y += (int) Math.round(dy * dt);
+        x += dx * dt;
+        y += dy * dt;
     }
 
     public void render(javafx.scene.canvas.GraphicsContext g) {

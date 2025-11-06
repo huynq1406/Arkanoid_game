@@ -5,9 +5,8 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
 public class NormalBricks extends AbstractBrick {
-
-    public NormalBricks(int x, int y, int width, int height) {
-        super(x, y, width, height); // chỉ cần 1 hit để phá
+    public NormalBricks(double x, double y, int width, int height) {
+        super(x, y, width, height);
     }
 
     @Override

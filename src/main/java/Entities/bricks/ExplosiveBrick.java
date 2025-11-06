@@ -6,9 +6,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
 public class ExplosiveBrick extends AbstractBrick {
-
-
-    public ExplosiveBrick(int x, int y, int width, int height) {
+    public ExplosiveBrick(double x, double y, int width, int height) {
         super(x, y, width, height);
     }
 
@@ -31,13 +29,13 @@ public class ExplosiveBrick extends AbstractBrick {
     // Dành cho xử lý lan nổ
     public List<AbstractBrick> explode(List<AbstractBrick> allBricks) {
         List<AbstractBrick> explodedBricks = new ArrayList<>();
-        int explosionRange = width + 50; // bán kính nổ
+        double explosionRange = width + 50; // bán kính nổ
 
         for (AbstractBrick b : allBricks) {
             if (b == this || b.isDestroyed()) continue;
 
-            int dx = Math.abs(b.getX() - this.x); //khoang cach giua vien gach kiem tra va vien gach phat no
-            int dy = Math.abs(b.getY() - this.y);
+            double dx = Math.abs(b.getX() - this.x); //khoang cach giua vien gach kiem tra va vien gach phat no
+            double dy = Math.abs(b.getY() - this.y);
 
             if (dx <= explosionRange && dy <= explosionRange) {
                 boolean justDestroyed = b.takeHit(explodedBricks); //nổ không liên hoàn

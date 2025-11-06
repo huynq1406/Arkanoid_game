@@ -10,8 +10,8 @@ public abstract class AbstractBrick extends GameObject {
     protected int hitPoints;
     protected boolean destroyed = false;
 
-    public AbstractBrick(int x, int y, int width, int height) {
-        super(x,y,width, height);
+    public AbstractBrick(double x, double y, int width, int height) {
+        super(x, y, width, height);
         this.hitPoints = 1;
     }
 

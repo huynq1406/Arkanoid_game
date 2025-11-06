@@ -3,8 +3,8 @@ package ObjectManager;
 // ObjectManager hoặc BallManager
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Iterator;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
 import Entities.Ball;
 import Entities.Paddle;
 
@@ -21,8 +21,14 @@ public class BallManager {
     }
 
     public void updateAll(double dt, Paddle paddle) {
-        for (Ball b : balls) {
+        Iterator<Ball> it = balls.iterator();
+        while (it.hasNext()) {
+            Ball b = it.next();
             b.update(dt, paddle);
+
+            if (b.isOffScreen(600)) {
+                it.remove();
+            }
         }
     }
 

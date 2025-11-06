@@ -12,7 +12,7 @@ public class Ball extends MovableObject {
     private double dirY;
     private boolean launched = false;
 
-    public Ball(int x, int y, int radius) {
+    public Ball(double x, double y, int radius) {
         super(x - radius, y - radius, radius * 2, radius * 2);
         this.radius = radius;
         this.speed = 300;
@@ -28,8 +28,8 @@ public class Ball extends MovableObject {
         if (len < 1e-6) return;
         dirX = newDirX / len;
         dirY = newDirY / len;
-        this.dx = 1.5 * speed * dirX;
-        this.dy = 1.5 * speed * dirY;
+        this.dx = 2 * speed * dirX;
+        this.dy = 2 * speed * dirY;
     }
 
     public double getDirX() { return dirX; }
@@ -49,8 +49,12 @@ public class Ball extends MovableObject {
         this.launched = false;
         this.x = paddle.getX() + paddle.getWidth()/2 - radius;
         this.y = paddle.getY() - 1 - radius*2;
-        this.speed = 220;
+        this.speed = 300;
         setDirection(0.5, -1); // HƯỚNG MẶC ĐỊNH KHI RESET
+    }
+
+    public boolean isOffScreen(double screenHeight) {
+        return this.y > screenHeight + 50;
     }
 
     public void update(double dt, Paddle paddle) {

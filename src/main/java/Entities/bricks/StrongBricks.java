@@ -5,8 +5,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
 public class StrongBricks extends AbstractBrick {
-
-    public StrongBricks(int x, int y, int width, int height) {
+    public StrongBricks(double x, double y, int width, int height) {
         super(x, y, width, height);
         this.hitPoints = 3; // cần 3 hit để phá
     }

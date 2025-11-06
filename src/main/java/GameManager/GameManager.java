@@ -128,11 +128,12 @@ public class GameManager {
     }
 
     public void onMousePress() {
-        if (!ball.isLaunched()) {
-            ball.launch();
+        for (Ball b : ballManager.getBalls()) {
+            if (!b.isLaunched()) {
+                b.launch();
+            }
         }
     }
-
 
     private void tick(double dt) {
         if (gameOver) return;
@@ -179,6 +180,7 @@ public class GameManager {
 
     private void nextLevel() {
         levelIndex++;
+        gameHUD.updateLevel(levelIndex);
         buildLevel();
         score += 1000;  // Bonus điểm khi hoàn thành level (tùy chỉnh)
     }
@@ -195,22 +197,30 @@ public class GameManager {
         return new BoundingBox(br.getX(), br.getY(), br.getWidth(), br.getHeight());
     }
 
-    private void adjustBallPosition(Bounds bBall, Bounds bBrick, CollisionSide side) {
-        double epsilon = 1.0;  // Khoảng cách nhỏ để push out
+    private void adjustBallPosition(Ball b, Bounds bBall, Bounds bBrick, CollisionSide side) {
         switch (side) {
-            case LEFT:   ball.setX((int)(ball.getX() - ((bBall.getMaxX() - bBrick.getMinX()) - epsilon))); break;
-            case RIGHT:  ball.setX((int)(ball.getX() + (bBrick.getMaxX() - bBall.getMinX()) + epsilon)); break;
-            case TOP:    ball.setY((int)(ball.getY() - (bBall.getMaxY() - bBrick.getMinY()) - epsilon)); break;
-            case BOTTOM: ball.setY((int)(ball.getY() + (bBrick.getMaxY() - bBall.getMinY()) + epsilon)); break;
-            default: break;
+            case LEFT:
+                b.setX(bBrick.getMinX() - bBall.getWidth() - 1);
+                break;
+            case RIGHT:
+                b.setX(bBrick.getMaxX() + 1);
+                break;
+            case TOP:
+                b.setY(bBrick.getMinY() - bBall.getHeight() - 1);
+                break;
+            case BOTTOM:
+                b.setY(bBrick.getMaxY() + 1);
+                break;
+            case NONE:
+                break;
         }
     }
 
-    private CollisionSide checkCollision(Bounds a, Bounds b) {
-        if (!a.intersects(b)) return CollisionSide.NONE;
+    private CollisionSide checkCollision(Ball b, Bounds a, Bounds bBrick) {
+        if (!a.intersects(bBrick)) return CollisionSide.NONE;
 
         double aLeft = a.getMinX(), aRight = a.getMaxX(), aTop = a.getMinY(), aBottom = a.getMaxY();
-        double bLeft = b.getMinX(), bRight = b.getMaxX(), bTop = b.getMinY(), bBottom = b.getMaxY();
+        double bLeft = bBrick.getMinX(), bRight = bBrick.getMaxX(), bTop = bBrick.getMinY(), bBottom = bBrick.getMaxY();
 
         double overlapLeft   = aRight - bLeft;   // a chèn vào b từ trái
         double overlapRight  = bRight - aLeft;   // a chèn vào b từ phải
@@ -222,12 +232,12 @@ public class GameManager {
 
         double threshold = 1.0;  // Nếu gần bằng, coi như góc
         if (Math.abs(minHoriz - minVert) < threshold) {
-            // Góc: Trả về side dựa trên velocity (hướng bóng đang đi)
-            if (ball.getDx() != 0 && ball.getDy() != 0) {
-                // Có thể xử lý cả horiz và vert ở loop ngoài
-                return (Math.abs(ball.getDx()) > Math.abs(ball.getDy())) ?
-                        (overlapLeft < overlapRight ? CollisionSide.LEFT : CollisionSide.RIGHT) :
-                        (overlapTop < overlapBottom ? CollisionSide.TOP : CollisionSide.BOTTOM);
+            // Góc: Trả về side dựa trên velocity
+            // [SỬA] Dùng b.getDx() thay vì ball.getDx()
+            if (b.getDx() != 0 && b.getDy() != 0) {
+                return (Math.abs(b.getDx()) > Math.abs(b.getDy())) ?
+                       (overlapLeft < overlapRight ? CollisionSide.LEFT : CollisionSide.RIGHT) :
+                       (overlapTop < overlapBottom ? CollisionSide.TOP : CollisionSide.BOTTOM);
             }
         }
 
@@ -239,54 +249,101 @@ public class GameManager {
     }
 
     private void checkCollisionWithWalls() {
-        Bounds br = boundsFrom(ball);
-        if (br.getMinX() <= 0 && ball.getDx() < 0)                 reflectBall(1, 0);  // left wall
-        if (br.getMaxX() >= width && ball.getDx() > 0)             reflectBall(-1, 0); // right wall
-        if (br.getMinY() <= 0 && ball.getDy() < 0)                 reflectBall(0, 1);  // ceiling
+        for (Ball b : ballManager.getBalls()) {
+            if (b.getX() <= 0) {
+                reflectBall(b, 1, 0);
+                b.setX(0); 
+            } 
+            else if (b.getX() + b.getWidth() >= width) {
+                reflectBall(b, 1, 0);
+                b.setX(width - b.getWidth()); 
+            }
+
+            if (b.getY() <= 0) {
+                reflectBall(b, 0, 1); 
+                b.setY(0); 
+            }
+        }
     }
 
     private void checkCollisionWithPaddle() {
-        Bounds bBall = boundsFrom(ball);
         Bounds bPaddle = boundsFrom(paddle);
-        if (bBall.intersects(bPaddle) && ball.getDy() > 0) {
-            reflectBall(0, -1); // bounce up
-            double dirX = ball.getDirX(), dirY = ball.getDirY();
-            double minAbsY = 0.35;
-            if (Math.abs(dirY) < minAbsY) {
-                dirY = -minAbsY;
-                ball.setDirection(dirX, dirY);
+        
+        for (Ball b : ballManager.getBalls()) {
+            Bounds bBall = boundsFrom(b); 
+
+            // Chỉ kiểm tra va chạm nếu bóng đang RƠI XUỐNG (dy > 0)
+            // và va chạm thực sự xảy ra
+            if (b.getDy() > 0 && bBall.intersects(bPaddle)) {
+                
+                double ballCenterX = b.getX() + b.getWidth() / 2;
+                double paddleCenterX = paddle.getX() + paddle.getWidth() / 2;
+                
+                // Tính toán vị trí va chạm trên paddle (-1.0 đến 1.0)
+                double diff = ballCenterX - paddleCenterX;
+                
+                // Chuẩn hóa diff (từ -1 đến 1)
+                double newDirX = (diff / (paddle.getWidth() / 2.0));
+                
+                // Giới hạn giá trị, không để góc quá dốc
+                newDirX = Math.max(-1.0, Math.min(1.0, newDirX));
+
+                // Luôn nảy bóng LÊN (Y âm)
+                // Dùng -Math.abs() để đảm bảo Y luôn là số âm (đi lên)
+                b.setDirection(newDirX, -Math.abs(b.getDirY())); 
+                
+                // [QUAN TRỌNG] Đẩy nhẹ bóng lên để tránh va chạm kép/dính
+                b.setY(paddle.getY() - b.getHeight() - 0.1); 
+                
+                // playPaddleSound();
             }
         }
     }
 
     private void checkCollisionWithBricks() {
-        Bounds bBall = boundsFrom(ball);
-        boolean reflectedHoriz = false;
-        boolean reflectedVert = false;
+        
+        Iterator<Ball> ballIterator = ballManager.getBalls().iterator();
+        while (ballIterator.hasNext()) {
+            Ball b = ballIterator.next(); // Lấy bóng hiện tại
 
-        for (AbstractBrick brick : bricks) {
-            if (brick.isDestroyed()) {
-                continue;
-            }
-            CollisionSide side = checkCollision(bBall, boundsFrom(brick));
-            if (side == CollisionSide.NONE) continue;
+            Bounds bBall = boundsFrom(b);
+            boolean reflectedHoriz = false;
+            boolean reflectedVert = false;
 
-            // Collect sides để reflect sau (tránh flip nhiều lần)
-            if (side == CollisionSide.LEFT || side == CollisionSide.RIGHT) reflectedHoriz = true;
-            if (side == CollisionSide.TOP || side == CollisionSide.BOTTOM) reflectedVert = true;
-            // Adjust vị trí bóng ra khỏi brick để tránh kẹt
-            adjustBallPosition(bBall, boundsFrom(brick), side);
+            Iterator<AbstractBrick> brickIterator = bricks.iterator();
+            while (brickIterator.hasNext()) {
+                AbstractBrick brick = brickIterator.next();
+                
+                if (brick.isDestroyed()) {
+                    continue;
+                }
 
-            boolean destroyedNow = brick.takeHit(bricks);
+                Bounds bBrick = boundsFrom(brick);
+                
+                // [SỬA] Truyền bóng 'b' vào hàm checkCollision
+                CollisionSide side = checkCollision(b, bBall, bBrick);
+                
+                if (side == CollisionSide.NONE) continue;
 
-            if (destroyedNow) {
+                // Thu thập các cạnh
+                if (side == CollisionSide.LEFT || side == CollisionSide.RIGHT) reflectedHoriz = true;
+                if (side == CollisionSide.TOP || side == CollisionSide.BOTTOM) reflectedVert = true;
+                
+                // Đẩy bóng 'b' ra
+                adjustBallPosition(b, bBall, bBrick, side); 
+
+                // Cập nhật lại bBall sau khi đẩy (quan trọng)
+                bBall = boundsFrom(b);
+
+                boolean destroyedNow = brick.takeHit(bricks); 
+
+                if (destroyedNow) {
                 // spawn explosion effect at brick's position
-                playSound("/audio/hitbrick.wav");
                 effects.add(new ExplosionEffect(brick.getX(), brick.getY(), 30, explosionImage));
 
                 // Thêm xác suất rơi power-up khi gạch bị phá
                 double rand = Math.random();
-                if (rand < 0.3) { // 30% chance to drop a power-up
+                if (rand < 0.3) {
                     PowerUp powerUp;
                     double powerupRand = Math.random();
 
@@ -304,21 +361,20 @@ public class GameManager {
 
                 score += (brick instanceof StrongBricks) ? 150 : 50;
                 score += (brick instanceof NormalBricks) ? 100 : 0;
-
-                if (gameHUD != null) {
-                    gameHUD.updateScore(score);
-                }
-
                 double newSpeed = Math.min(420, ball.getSpeed() * 1.02);
                 ball.setSpeed(newSpeed);
             } else if (brick instanceof ExplosiveBrick) {
-                playSound("/audio/explode.ogg");
                 ((ExplosiveBrick)brick).takeHit(bricks);
             }
-        }
-        // Apply reflect chỉ 1 lần sau loop
-        if (reflectedHoriz) reflectBall(ball.getDx() > 0 ? -1 : 1, 0);  // Flip x dựa trên dir hiện tại
-        if (reflectedVert) reflectBall(0, ball.getDy() > 0 ? -1 : 1);// Flip y
+            } // Kết thúc lặp gạch
+            
+            // Áp dụng reflect cho bóng 'b'
+            // (Bạn có thể dùng logic cũ 'b.getDx() > 0 ? -1 : 1'
+            // nếu bạn đã sửa reflectBall)
+            if (reflectedHoriz) reflectBall(b, 1, 0);
+            if (reflectedVert) reflectBall(b, 0, 1);
+            
+        } // Kết thúc lặp bóng
     }
 
     private void checkCollisionWithPowerUps() {
@@ -334,7 +390,38 @@ public class GameManager {
                     lives++;
                     gameHUD.updateLives(lives);
                 }
+
+                if (p instanceof MultiBallPowerUp) {
+                    executeMultiBall();
+                }
             }
+        }
+    }
+
+    private void executeMultiBall() {
+        List<Ball> newBalls = new ArrayList<>();
+        
+        // Duyệt qua tất cả bóng hiện có để nhân bản
+        for (Ball originalBall : ballManager.getBalls()) { 
+            
+            // Tạo 2 bóng mới dựa trên bóng gốc
+            Ball newBall1 = new Ball((int)originalBall.getX(), (int)originalBall.getY(), originalBall.getDiameter() / 2);
+            newBall1.setSpeed(originalBall.getSpeed()); 
+            newBall1.setDirection(-originalBall.getDirX(), -originalBall.getDirY()); // Hướng 1
+            newBall1.launch();
+            
+            Ball newBall2 = new Ball((int)originalBall.getX(), (int)originalBall.getY(), originalBall.getDiameter() / 2);
+            newBall2.setSpeed(originalBall.getSpeed());
+            newBall2.setDirection(originalBall.getDirX(), -originalBall.getDirY()); // Hướng 2
+            newBall2.launch();
+
+            newBalls.add(newBall1);
+            newBalls.add(newBall2);
+        }
+
+        // Thêm tất cả bóng mới vào manager
+        for (Ball b : newBalls) {
+            ballManager.addBall(b);
         }
     }
 
@@ -347,27 +434,17 @@ public class GameManager {
         panel.setRefs(ball, paddle, bricks);
     }
 
-    private void reflectBall(int flipX, int flipY) {
-        double dirX = ball.getDirX();
-        double dirY = ball.getDirY();
+    private void reflectBall(Ball b, int flipX, int flipY) {
+        double dirX = b.getDirX();
+        double dirY = b.getDirY();
         if (flipX != 0) dirX = -dirX;
         if (flipY != 0) dirY = -dirY;
-        ball.setDirection(dirX, dirY);
+        b.setDirection(dirX, dirY);
     }
 
     private void checkLoseLife() {
-        boolean lost = ballManager.getBalls().stream()
-                .anyMatch(b -> b.getY() > height);
-
-        if (lost) {
+        if (ballManager.getBalls().isEmpty()) { 
             loseLife();
-            resetBallsToPaddle();
-        }
-    }
-
-    private void resetBallsToPaddle() {
-        for (Ball b : ballManager.getBalls()) {
-            b.resetToPaddle(paddle);
         }
     }
 
@@ -380,7 +457,8 @@ public class GameManager {
 
         if (lives > 0) {
             ball.resetToPaddle(paddle);
-            System.out.println("Bạn còn " + lives + " mạng.");
+            ballManager.addBall(ball);
+            System.out.println("Ban con " + lives + " mang.");
         } else {
             gameOver = true;
             loop.stop(); // Dừng vòng lặp
