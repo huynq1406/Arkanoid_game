@@ -8,7 +8,7 @@ public class MultiBallPowerUp extends PowerUp implements IPowerUp {
     private final List<Ball> balls;
 
     public MultiBallPowerUp(float x, float y, List<Ball> balls) {
-        super(x, y, 3, "/mbsPW.png");
+        super(x, y, 3, "/mbPW.png");
         this.balls = balls;
         this.active = false;
     }

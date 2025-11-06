@@ -73,7 +73,7 @@ public class GamePanel extends Pane {
         return canvas.getGraphicsContext2D();
     }
 
-    /** JavaFX: gọi mỗi frame để vẽ (thay paintComponent) */
+
     public void render() {
         GraphicsContext g = canvas.getGraphicsContext2D();
 
