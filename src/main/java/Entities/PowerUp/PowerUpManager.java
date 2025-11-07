@@ -46,5 +46,9 @@ public class PowerUpManager {
     public List<PowerUp> getPowerUps() {
         return powerUps;
     }
+
+    public void clearAll() {
+        powerUps.clear();
+    }
 }
 

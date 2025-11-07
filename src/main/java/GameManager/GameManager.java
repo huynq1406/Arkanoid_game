@@ -12,7 +12,6 @@ import javafx.geometry.BoundingBox;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.Media;
 
@@ -82,6 +81,9 @@ public class GameManager {
         }
     }
 
+    /**
+     * Build the current level from map file
+     */
     public void buildLevel() {
         GraphicsContext gc = panel.getGraphicsContext();
         currentLevel = new TextMapLevel("levels/Map.txt", levelIndex, gc);
@@ -105,6 +107,9 @@ public class GameManager {
         }
     }
 
+    /**
+     * Start the game loop
+     */
     public void start() {
         if (loop != null) loop.stop();
         loop = new AnimationTimer() {
@@ -138,6 +143,10 @@ public class GameManager {
         }
     }
 
+    /**
+     * Game update tick
+     * @param dt Delta time in seconds since last tick
+     */
     private void tick(double dt) {
         if (gameOver) return;
 
@@ -185,7 +194,7 @@ public class GameManager {
     private void nextLevel() {
         levelIndex++;
         buildLevel();
-        score += 1000;  // Bonus điểm khi hoàn thành level (tùy chỉnh)
+        score += 1000;
     }
 
     /* --- Collision helpers using JavaFX Bounds built from existing getters --- */
@@ -236,7 +245,6 @@ public class GameManager {
         double threshold = 1.0;  // Nếu gần bằng, coi như góc
         if (Math.abs(minHoriz - minVert) < threshold) {
             // Góc: Trả về side dựa trên velocity
-            // [SỬA] Dùng b.getDx() thay vì ball.getDx()
             if (b.getDx() != 0 && b.getDy() != 0) {
                 return (Math.abs(b.getDx()) > Math.abs(b.getDy())) ?
                        (overlapLeft < overlapRight ? CollisionSide.LEFT : CollisionSide.RIGHT) :
@@ -291,11 +299,10 @@ public class GameManager {
                 // Giới hạn giá trị, không để góc quá dốc
                 newDirX = Math.max(-1.0, Math.min(1.0, newDirX));
 
-                // Luôn nảy bóng LÊN (Y âm)
-                // Dùng -Math.abs() để đảm bảo Y luôn là số âm (đi lên)
+                // Luôn nảy bóng lên
                 b.setDirection(newDirX, -Math.abs(b.getDirY())); 
                 
-                // [QUAN TRỌNG] Đẩy nhẹ bóng lên để tránh va chạm kép/dính
+                // Đẩy nhẹ bóng lên để tránh va chạm kép/dính
                 b.setY(paddle.getY() - b.getHeight() - 0.1); 
                 
                 // playPaddleSound();
@@ -322,8 +329,7 @@ public class GameManager {
                 }
 
                 Bounds bBrick = boundsFrom(brick);
-                
-                // [SỬA] Truyền bóng 'b' vào hàm checkCollision
+
                 CollisionSide side = checkCollision(b, bBall, bBrick);
                 
                 if (side == CollisionSide.NONE) continue;
@@ -341,20 +347,20 @@ public class GameManager {
                 boolean destroyedNow = brick.takeHit(bricks); 
 
                 if (destroyedNow) {
-                // spawn explosion effect at brick's position
-                effects.add(new ExplosionEffect(brick.getX(), brick.getY(), 30, explosionImage));
+                    playSound("/audio/hitbrick.wav");
+                    effects.add(new ExplosionEffect(brick.getX(), brick.getY(), 30, explosionImage));
 
                 // Thêm xác suất rơi power-up khi gạch bị phá
                 double rand = Math.random();
-                if (rand < 0.3) {
+                if (rand < 0.8) {
                     PowerUp powerUp;
                     double powerupRand = Math.random();
 
-                    if (powerupRand < 0.4) {
+                    if (powerupRand < 0.3) {
                         powerUp = new BigPaddlePW(brick.getX(), brick.getY(), paddle);
-                    } else if (powerupRand < 0.7) {
+                    } else if (powerupRand < 0.6) {
                         powerUp = new IncreaseBallSpeed(brick.getX(), brick.getY(), ball);
-                    } else if (powerupRand < 0.9) {
+                    } else if (powerupRand < 0.8) {
                         powerUp = new ExtraLifePowerUp(brick.getX(), brick.getY());
                     } else {
                         powerUp = new MultiBallPowerUp(brick.getX(), brick.getY(), Arrays.asList(ball), ballManager);
@@ -368,12 +374,11 @@ public class GameManager {
                 ball.setSpeed(newSpeed);
             } else if (brick instanceof ExplosiveBrick) {
                 ((ExplosiveBrick)brick).takeHit(bricks);
+                playSound("/audio/expode.ogg");
             }
             } // Kết thúc lặp gạch
             
             // Áp dụng reflect cho bóng 'b'
-            // (Bạn có thể dùng logic cũ 'b.getDx() > 0 ? -1 : 1'
-            // nếu bạn đã sửa reflectBall)
             if (reflectedHoriz) reflectBall(b, 1, 0);
             if (reflectedVert) reflectBall(b, 0, 1);
             
@@ -549,12 +554,12 @@ public class GameManager {
 
             backgroundMusicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
 
-            backgroundMusicPlayer.setVolume(0.5);
+            backgroundMusicPlayer.setVolume(0.2);
             backgroundMedia = new Media(getClass().getResource(audioPath).toExternalForm());
             backgroundMusicPlayer = new MediaPlayer(backgroundMedia);
 
             backgroundMusicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
-            backgroundMusicPlayer.setVolume(0.5);
+            backgroundMusicPlayer.setVolume(0.2);
         } catch (Exception e) {
         System.err.println("Không thể tải nhạc nền: " + audioPath + ". Lỗi: " + e.getMessage());
     }

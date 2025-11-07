@@ -9,6 +9,13 @@ public abstract class GameObject {
     protected int width;
     protected int height;
 
+    /**
+     * Constructor for GameObject
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     */
     public GameObject(double x, double y, int width, int height) {
         this.x = x;
         this.y = y;
@@ -16,12 +23,18 @@ public abstract class GameObject {
         this.height = height;
     }
 
-    // Dùng Rectangle2D thay vì java.awt.Rectangle
+    /**
+     * Get bounding box for collision detection
+     * @return
+     */
     public Rectangle2D getBounds() {
         return new Rectangle2D(x, y, width, height);
     }
 
-    // Vẽ bằng JavaFX GraphicsContext
+    /**
+     * Render the object
+     * @param g
+     */
     public abstract void render(GraphicsContext g);
 
     public void update(double dt) {}

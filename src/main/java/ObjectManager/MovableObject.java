@@ -14,7 +14,6 @@ public class MovableObject extends GameObject {
     }
 
     public void render(javafx.scene.canvas.GraphicsContext g) {
-        // Default render method (can be overridden)
         g.setFill(javafx.scene.paint.Color.GRAY);
         g.fillRect(x, y, width, height);
     }

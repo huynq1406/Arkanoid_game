@@ -27,7 +27,6 @@ import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 
 import java.util.List;
-import java.util.Stack;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -513,7 +512,3 @@ public class MainMenuPane extends StackPane {
         quitButton.setOnAction(quitAction);
     }
 }
-
-
-
-

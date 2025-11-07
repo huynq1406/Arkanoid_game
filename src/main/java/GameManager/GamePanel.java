@@ -8,13 +8,12 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class GamePanel extends StackPane {
-    public static final int WIDTH  = 800;   // giữ hằng như Swing cũ
+    public static final int WIDTH  = 800;
     public static final int HEIGHT = 600;
 
     private final Canvas canvas; // Bỏ khởi tạo ngay tại đây để code gọn hơn trong constructor

@@ -12,7 +12,6 @@ public class ExtraLifePowerUp extends PowerUp {
 
     @Override
     public void deactivate() {
-        // Extra life is instant; nothing to deactivate
     }
 }
 

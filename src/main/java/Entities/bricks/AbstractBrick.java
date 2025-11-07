@@ -10,6 +10,13 @@ public abstract class AbstractBrick extends GameObject {
     protected int hitPoints;
     protected boolean destroyed = false;
 
+    /**
+     * Constructor for AbstractBrick
+     * @param x
+     * @param y
+     * @param width
+     * @param height
+     */
     public AbstractBrick(double x, double y, int width, int height) {
         super(x, y, width, height);
         this.hitPoints = 1;
@@ -19,6 +26,11 @@ public abstract class AbstractBrick extends GameObject {
         return destroyed;
     }
 
+    /**
+     * Handle when the brick is hit
+     * @param allBricks
+     * @return true if the brick is destroyed
+     */
     public boolean takeHit(List<AbstractBrick> allBricks) {
         if (destroyed) return false;
         hitPoints--;

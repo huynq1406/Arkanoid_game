@@ -10,7 +10,7 @@ public class BigPaddlePW extends PowerUp {
     public BigPaddlePW(double x, double y, Paddle paddle) {
         super(x, y, 1, "/bpsPW.png");
         this.paddle = paddle;
-        this.duration = 300; // example duration
+        this.duration = 300;
     }
 
     @Override

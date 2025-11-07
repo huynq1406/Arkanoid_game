@@ -1,13 +1,10 @@
 package GameManager;
 
-import Entities.Ball;
 import Entities.Paddle;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 
