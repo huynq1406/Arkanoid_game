@@ -117,6 +117,12 @@ public class GameHUD extends HBox {
         levelValueLabel.setText(String.valueOf(level));
     }
 
+    public void updateAll(int score, int lives, int level) {
+        updateScore(score);
+        updateLives(lives);
+        updateLevel(level);
+    }
+
     public HBox getPowerUpDisplayBox() {
         return powerUpDisplayBox;
     }

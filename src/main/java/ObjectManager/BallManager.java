@@ -37,5 +37,9 @@ public class BallManager {
             b.render(g);
         }
     }
+
+    public void clearAll() {
+        balls.clear();
+    }
 }
 

@@ -52,17 +52,16 @@ public class GameManager {
 
     private enum CollisionSide { NONE, LEFT, RIGHT, TOP, BOTTOM }
 
-    public GameManager(int width, int height, GamePanel panel, Ball ball, Paddle paddle, String playerName, Consumer<Integer> onGameOver, GameHUD gameHUD) {
+    public GameManager(int width, int height, GamePanel panel, Paddle paddle, String playerName, Consumer<Integer> onGameOver, GameHUD gameHUD) {
         this.width = width;
         this.height = height;
         this.panel  = panel;
-        this.ball   = ball;
+        this.ball   = new Ball(400, 300, 10);
         ballManager.addBall(this.ball);
         this.paddle = paddle;
         this.playerName = playerName;
         this.onGameOver = onGameOver;
         this.gameHUD = gameHUD;
-        ballManager.addBall(this.ball);
 
         // try to load explosion image from resources (/images/explosion.png)
         InputStream is = getClass().getResourceAsStream("/images/explosion.png");
@@ -91,14 +90,18 @@ public class GameManager {
             bricks = new ArrayList<>(currentLevel.getBricks());
             panel.setRefs(ball, paddle, bricks);
             powerUpManager = new PowerUpManager();
+            ballManager.clearAll();
+            lives++;
             ball.resetToPaddle(paddle);  // Reset ball khi bắt đầu level mới
             System.out.println("Loaded level " + levelIndex);
         } catch (IllegalArgumentException e) {
             // Xử lý nếu không tìm thấy level (hết level)
             gameOver = true;
             loop.stop();
-//            panel.showGameOver();  // Hoặc hiển thị "You Win!" nếu muốn
-            System.out.println("No more levels: " + e.getMessage());
+            
+            if (onGameOver != null) {
+                onGameOver.accept(this.score);
+            }
         }
     }
 
@@ -141,6 +144,7 @@ public class GameManager {
         ballManager.updateAll(dt, paddle);
         paddle.update(dt);
         powerUpManager.updateAll();
+        gameHUD.updateAll(score, lives, levelIndex);
 
         checkLoseLife();
         checkCollisionWithWalls();
@@ -180,7 +184,6 @@ public class GameManager {
 
     private void nextLevel() {
         levelIndex++;
-        gameHUD.updateLevel(levelIndex);
         buildLevel();
         score += 1000;  // Bonus điểm khi hoàn thành level (tùy chỉnh)
     }
@@ -388,7 +391,6 @@ public class GameManager {
 
                 if (p instanceof ExtraLifePowerUp) {
                     lives++;
-                    gameHUD.updateLives(lives);
                 }
 
                 if (p instanceof MultiBallPowerUp) {
@@ -450,10 +452,6 @@ public class GameManager {
 
     private void loseLife() {
         lives--;
-
-        if (gameHUD != null) {
-            gameHUD.updateLives(lives);
-        }
 
         if (lives > 0) {
             ball.resetToPaddle(paddle);
